@@ -21,6 +21,7 @@ export function getMysql() {
 export async function testConnection(retries = 30, delayMs = 5000) {
   for (let i = 0; i < retries; i++) {
     try {
+      console.log(`[MySQL] Connecting to ${config.mysql.host}:${config.mysql.port} (User: ${config.mysql.user})`)
       const db = getMysql()
       await db.query("SELECT 1")
       console.log("✅[MySQL] Connection established")
