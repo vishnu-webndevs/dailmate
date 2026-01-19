@@ -12,20 +12,17 @@ services:
     restart: always
     environment:
       - PORT=8000
-      - MYSQL_HOST=${DB_HOST:-mysql}
+      - MYSQL_HOST=${DB_HOST}
       - MYSQL_PORT=${DB_PORT:-3306}
-      - MYSQL_USER=${DB_USERNAME:-root}
-      - MYSQL_PASSWORD=${DB_PASSWORD:-rootpassword}
-      - MYSQL_DATABASE=${DB_DATABASE:-wnd-ai}
+      - MYSQL_USER=${DB_USERNAME}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+      - MYSQL_DATABASE=${DB_DATABASE:-dailmate_wnd}
       - JWT_SECRET=${JWT_SECRET:-changeme}
       - PUBLIC_URL=${PUBLIC_URL:-https://dailmate.webndevs.com}
       - DEEPGRAM_API_KEY=${DEEPGRAM_API_KEY}
       - ELEVENLABS_API_KEY=${ELEVENLABS_API_KEY}
       - ELEVENLABS_VOICE_ID=${ELEVENLABS_VOICE_ID}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
-    depends_on:
-      mysql:
-        condition: service_healthy
     networks:
       - app-network
 
@@ -46,25 +43,6 @@ services:
     networks:
       - app-network
 
-  mysql:
-    image: mysql:8.0
-    restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: wnd-ai
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    volumes:
-      - mysql_data:/var/lib/mysql
-    networks:
-      - app-network
-
 networks:
   app-network:
     driver: bridge
-
-volumes:
-  mysql_data:
