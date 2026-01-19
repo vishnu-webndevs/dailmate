@@ -24,7 +24,8 @@ services:
       - ELEVENLABS_VOICE_ID=${ELEVENLABS_VOICE_ID}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
     networks:
       - app-network
 
@@ -51,6 +52,11 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
       MYSQL_DATABASE: wnd-ai
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     volumes:
       - mysql_data:/var/lib/mysql
     networks:
