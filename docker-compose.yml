@@ -39,7 +39,5 @@ services:
     depends_on:
       - frontend
       - server
-    networks:
-      - app-network
 
 
