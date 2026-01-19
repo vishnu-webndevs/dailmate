@@ -13,16 +13,19 @@ services:
     environment:
       - PORT=8000
       - MYSQL_HOST=${DB_HOST}
-      - MYSQL_PORT=${DB_PORT:-3306}
+      - MYSQL_PORT=${DB_PORT}
       - MYSQL_USER=${DB_USERNAME}
       - MYSQL_PASSWORD=${DB_PASSWORD}
-      - MYSQL_DATABASE=${DB_DATABASE:-dailmate_wnd}
-      - JWT_SECRET=${JWT_SECRET:-changeme}
-      - PUBLIC_URL=${PUBLIC_URL:-https://dailmate.webndevs.com}
+      - MYSQL_DATABASE=${DB_DATABASE}
+      - JWT_SECRET=${JWT_SECRET}
+      - PUBLIC_URL=${PUBLIC_URL}
       - DEEPGRAM_API_KEY=${DEEPGRAM_API_KEY}
       - ELEVENLABS_API_KEY=${ELEVENLABS_API_KEY}
       - ELEVENLABS_VOICE_ID=${ELEVENLABS_VOICE_ID}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - TWILIO_ACCOUNT_SID=${TWILIO_ACCOUNT_SID}
+      - TWILIO_AUTH_TOKEN=${TWILIO_AUTH_TOKEN}
+      - TWILIO_FROM=${TWILIO_FROM}
     networks:
       - app-network
 
