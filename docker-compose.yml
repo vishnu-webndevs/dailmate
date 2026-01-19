@@ -4,8 +4,6 @@ services:
     restart: always
     environment:
       - NODE_ENV=production
-    networks:
-      - app-network
 
   server:
     build: ./server
