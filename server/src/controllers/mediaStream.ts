@@ -5,7 +5,6 @@ import { DeepgramSTT } from "../audio/adapters/deepgramSTT.js"
 import { MockTTS } from "../audio/adapters/mockTTS.js"
 import { ElevenLabsTTS } from "../audio/adapters/elevenlabsTTS.js"
 import { createRuntime } from "../runtime/index.js"
-import { getMongo } from "../db/mongo.js"
 import { secretService } from "../services/secretService.js"
 import { agentService } from "../services/agentService.js"
 import { promptService } from "../services/promptService.js"
@@ -328,11 +327,9 @@ const plugin: FastifyPluginAsync = async (app) => {
               app.log.info({ streamSid: msg.streamSid, transcript: text }, "⌛[WebSocketController] Final Transcript:🔵")
               app.log.info({ streamSid: msg.streamSid, customer_said: text }, "⌛[WebSocketController] Customer said")
 
-              try {
-                const mongo = await getMongo()
-                await mongo.collection("transcripts").insertOne({ callId: Array.from(callService.live()).at(0)?.id || "", role: "user", text, ts: new Date() })
-              } catch {
-                void 0
+              const currentCallId = Array.from(callService.live()).at(0)?.id || ""
+              if (currentCallId) {
+                void callService.addTranscript(currentCallId, "user", text)
               }
               sendMonitor(s.agentId, { type: "MONITOR_TRANSCRIPT", agentId: s.agentId, speaker: "user", transcript: text, timestamp: new Date().toISOString() })
 
@@ -356,24 +353,18 @@ const plugin: FastifyPluginAsync = async (app) => {
                 const outText = (res as unknown as { output: string }).output
                 validateLanguageText(outText, s.language, "output", msg.streamSid, s.agentId)
                 app.log.info({ streamSid: msg.streamSid, agent_output: outText }, "⌛[WebSocketController] LLM Output")
-                try {
-                  const mongo = await getMongo()
-                  await mongo.collection("transcripts").insertOne({ callId: Array.from(callService.live()).at(0)?.id || "", role: "assistant", text: outText, ts: new Date() })
-                } catch {
-                  void 0
-                }
+                
+                void callService.addTranscript(s.callId, "assistant", outText)
 
                 s.history.push({ role: "assistant", content: outText })
                 if (s.history.length > 16) s.history.splice(0, s.history.length - 16)
 
                 try {
-                  const mongo = await getMongo()
                   const quality = computeQualityScore(outText, llmLatencyMs)
-                  await mongo.collection("conversation_metrics").insertOne({
+                  void callService.addMetric({
                     callId: s.callId,
                     streamSid: msg.streamSid,
                     agentId: s.agentId,
-                    createdAt: new Date(),
                     llmLatencyMs,
                     outputLength: outText.length,
                     quality

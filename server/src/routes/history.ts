@@ -1,6 +1,6 @@
 import { FastifyPluginAsync } from "fastify"
 import { getMysql } from "../db/mysql.js"
-import { getMongo } from "../db/mongo.js"
+import { callService } from "../services/callService.js"
 import "@fastify/jwt"
 
 const plugin: FastifyPluginAsync = async (app) => {
@@ -16,8 +16,7 @@ const plugin: FastifyPluginAsync = async (app) => {
   app.get("/:id/transcript", { preHandler: async (req) => { await req.jwtVerify() } }, async (req, reply) => {
     const id = (req.params as { id: string }).id
     try {
-      const mongo = await getMongo()
-      const docs = await mongo.collection("transcripts").find({ callId: id }).sort({ ts: 1 }).toArray()
+      const docs = await callService.getTranscripts(id)
       reply.send(docs)
     } catch {
       reply.send([])

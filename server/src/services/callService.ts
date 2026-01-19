@@ -34,7 +34,30 @@ async function init() {
         recordingUrl TEXT NULL
       )
     `)
-  } catch {
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS transcripts (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        callId VARCHAR(64) NOT NULL,
+        role VARCHAR(16) NOT NULL,
+        text TEXT NOT NULL,
+        ts DATETIME NOT NULL,
+         INDEX idx_call_id (callId)
+       )
+     `)
+     await db.query(`
+       CREATE TABLE IF NOT EXISTS metrics (
+         id INT AUTO_INCREMENT PRIMARY KEY,
+         callId VARCHAR(64) NOT NULL,
+         streamSid VARCHAR(64),
+         agentId INT,
+         llmLatencyMs INT,
+         outputLength INT,
+         quality FLOAT,
+         createdAt DATETIME NOT NULL,
+         INDEX idx_call_id (callId)
+       )
+     `)
+   } catch {
     return
   }
 }
@@ -66,4 +89,35 @@ function get(id: string): CallRecord | undefined {
   return inMemory.get(id)
 }
 
-export const callService = { init, upsert, update, live, get }
+async function addTranscript(callId: string, role: string, text: string) {
+  try {
+    const db = getMysql()
+    await db.query("INSERT INTO transcripts (callId, role, text, ts) VALUES (?, ?, ?, NOW())", [callId, role, text])
+  } catch {
+    // ignore
+  }
+}
+
+async function getTranscripts(callId: string) {
+  try {
+    const db = getMysql()
+    const [rows] = await db.query("SELECT role, text, ts FROM transcripts WHERE callId = ? ORDER BY ts ASC", [callId])
+    return rows
+  } catch {
+    return []
+  }
+}
+
+async function addMetric(data: { callId: string, streamSid: string, agentId?: number, llmLatencyMs: number, outputLength: number, quality: number }) {
+  try {
+    const db = getMysql()
+    await db.query(
+      "INSERT INTO metrics (callId, streamSid, agentId, llmLatencyMs, outputLength, quality, createdAt) VALUES (?, ?, ?, ?, ?, ?, NOW())",
+      [data.callId, data.streamSid, data.agentId || null, data.llmLatencyMs, data.outputLength, data.quality]
+    )
+  } catch {
+    // ignore
+  }
+}
+
+export const callService = { init, upsert, update, live, get, addTranscript, getTranscripts, addMetric }
