@@ -30,8 +30,9 @@ services:
 
   nginx:
     build: ./nginx
-    ports:
-      - "3000:80"
+    restart: always
+    expose:
+      - "80"
     depends_on:
       - frontend
       - server
