@@ -18,7 +18,7 @@ export function getMysql() {
   return pool
 }
 
-export async function testConnection(retries = 10, delayMs = 3000) {
+export async function testConnection(retries = 30, delayMs = 5000) {
   for (let i = 0; i < retries; i++) {
     try {
       const db = getMysql()
