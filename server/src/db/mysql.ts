@@ -17,3 +17,15 @@ export function getMysql() {
   }
   return pool
 }
+
+export async function testConnection() {
+  try {
+    const db = getMysql()
+    await db.query("SELECT 1")
+    console.log("✅[MySQL] Connection established")
+    return true
+  } catch (err) {
+    console.error("❗[MySQL] Connection failed:", err)
+    return false
+  }
+}

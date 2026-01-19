@@ -24,6 +24,7 @@ import debugRoutes from "./routes/debug.js"
 import { secretService } from "./services/secretService.js"
 import { agentService } from "./services/agentService.js"
 import { promptService } from "./services/promptService.js"
+import { callService } from "./services/callService.js"
 
 export function buildApp() {
   const app = Fastify({
@@ -35,6 +36,7 @@ export function buildApp() {
   void secretService.init()
   void agentService.init()
   void promptService.init()
+  void callService.init()
   app.register(cors, {
     origin: true,
     methods: ["GET","POST","PUT","DELETE","OPTIONS"],
