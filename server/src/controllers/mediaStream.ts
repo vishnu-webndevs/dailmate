@@ -367,7 +367,7 @@ const plugin: FastifyPluginAsync = async (app) => {
                     agentId: s.agentId,
                     llmLatencyMs,
                     outputLength: outText.length,
-                    quality
+                    quality: quality.overall
                   })
                   sendMonitor(s.agentId, { type: "QUALITY_SCORE", agentId: s.agentId, callId: s.callId, streamSid: msg.streamSid, quality, llmLatencyMs })
                 } catch {

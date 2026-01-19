@@ -33,10 +33,6 @@ export const config = {
     password: process.env.MYSQL_PASSWORD || "",
     database: process.env.MYSQL_DATABASE || "wnd-ai"
   },
-  mongo: {
-    uri: process.env.MONGO_URI || "mongodb://localhost:27017",
-    db: process.env.MONGO_DB || "wndai"
-  },
   aiProvider: process.env.AI_PROVIDER || "mock",
   forceHindi: bool(process.env.FORCE_HINDI)
 }
