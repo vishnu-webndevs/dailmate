@@ -8,7 +8,7 @@ export default function SMS() {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     const token = localStorage.getItem("jwt") || ""
-    const res = await fetch("http://localhost:3000/sms/send", {
+    const res = await fetch("/api/sms/send", {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       body: JSON.stringify({ to, text })

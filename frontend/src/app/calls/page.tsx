@@ -18,7 +18,7 @@ export default function Calls() {
   const [calls, setCalls] = useState<CallRecord[]>([])
   const [error, setError] = useState<string>("")
   const load = () => {
-    apiGet<CallRecord[]>("http://localhost:3000/calls/live").then(setCalls).catch((e) => setError(String(e)))
+    apiGet<CallRecord[]>("/api/calls/live").then(setCalls).catch((e) => setError(String(e)))
   }
   useEffect(() => {
     load()
@@ -27,7 +27,7 @@ export default function Calls() {
   }, [])
   const hangup = async (id: string) => {
     try {
-      await apiPostJson(`http://localhost:3000/calls/${id}/hangup`, {})
+      await apiPostJson(`/api/calls/${id}/hangup`, {})
       load()
     } catch (e) {
       setError(String(e))

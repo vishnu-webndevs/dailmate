@@ -12,7 +12,7 @@ export default function Analytics() {
   const [data, setData] = useState<Overview | null>(null)
   const [error, setError] = useState<string>("")
   useEffect(() => {
-    apiGet<Overview>("http://localhost:3000/analytics/overview").then(setData).catch((e) => setError(String(e)))
+    apiGet<Overview>("/api/analytics/overview").then(setData).catch((e) => setError(String(e)))
   }, [])
   return (
     <main className="p-8">

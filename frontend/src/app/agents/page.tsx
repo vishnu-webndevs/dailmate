@@ -34,21 +34,21 @@ export default function Agents() {
   const [testResult, setTestResult] = useState<string>("")
 
   const load = () => {
-    apiGet<Agent[]>("http://localhost:3000/agents")
+    apiGet<Agent[]>("/api/agents")
       .then(setAgents)
       .catch((e) => setError(String(e)))
   }
   useEffect(() => {
     load()
-    apiGet<Prompt[]>("http://localhost:3000/prompts")
+    apiGet<Prompt[]>("/api/prompts")
       .then(setPrompts)
       .catch(() => {})
-    apiGet<Array<{ phoneNumber: string; friendlyName?: string }>>("http://localhost:3000/twilio/numbers")
+    apiGet<Array<{ phoneNumber: string; friendlyName?: string }>>("/api/twilio/numbers")
       .then((nums) => {
         setTwilioNumbers(nums)
       })
       .catch(() => {})
-    apiGet<Voice[]>("http://localhost:3000/tts/voices")
+    apiGet<Voice[]>("/api/tts/voices")
       .then(setVoices)
       .catch(() => {})
   }, [])
@@ -56,7 +56,7 @@ export default function Agents() {
   const create = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      await apiPostJson("http://localhost:3000/agents", { name, description, promptId, twilioFrom, voice, language })
+      await apiPostJson("/api/agents", { name, description, promptId, twilioFrom, voice, language })
       setName("")
       setDescription("")
       setPromptId("")
@@ -82,7 +82,7 @@ export default function Agents() {
     e.preventDefault()
     if (!editing) return
     try {
-      await apiPutJson(`http://localhost:3000/agents/${editing.id}`, {
+      await apiPutJson(`/api/agents/${editing.id}`, {
         name: editName,
         description: editDescription,
         promptId: editPromptId,
@@ -108,7 +108,7 @@ export default function Agents() {
     try {
       const body: Record<string, unknown> = { to: testTo, agent_id: testAgent.id }
       if (testPromptId) body["prompt_id"] = testPromptId
-      const res = await apiPostJson<{ queued: boolean; sid?: string }>("http://localhost:3000/twilio/outbound", body)
+      const res = await apiPostJson<{ queued: boolean; sid?: string }>("/api/twilio/outbound", body)
       setTestResult(res.queued ? `Queued SID: ${res.sid || ""}` : "Failed to queue")
     } catch (err) {
       setTestResult(String(err))

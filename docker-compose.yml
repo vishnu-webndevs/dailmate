@@ -18,7 +18,7 @@ services:
       - MYSQL_PASSWORD=${DB_PASSWORD:-rootpassword}
       - MYSQL_DATABASE=${DB_DATABASE:-wnd-ai}
       - JWT_SECRET=${JWT_SECRET:-changeme}
-      - PUBLIC_URL=${PUBLIC_URL}
+      - PUBLIC_URL=${PUBLIC_URL:-https://dailmate.webndevs.com}
       - DEEPGRAM_API_KEY=${DEEPGRAM_API_KEY}
       - ELEVENLABS_API_KEY=${ELEVENLABS_API_KEY}
       - ELEVENLABS_VOICE_ID=${ELEVENLABS_VOICE_ID}
@@ -33,6 +33,12 @@ services:
     restart: always
     expose:
       - "80"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.dailmate-nginx.rule=Host(`dailmate.webndevs.com`)"
+      - "traefik.http.routers.dailmate-nginx.entrypoints=websecure"
+      - "traefik.http.routers.dailmate-nginx.tls.certresolver=letsencrypt"
+      - "traefik.http.services.dailmate-nginx.loadbalancer.server.port=80"
     depends_on:
       - frontend
       - server

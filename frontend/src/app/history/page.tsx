@@ -16,7 +16,7 @@ export default function History() {
   const [error, setError] = useState<string>("")
   useEffect(() => {
     const token = localStorage.getItem("jwt") || ""
-    fetch("http://localhost:3000/history", { headers: { Authorization: `Bearer ${token}` } })
+    fetch("/api/history", { headers: { Authorization: `Bearer ${token}` } })
       .then(async r => {
         if (!r.ok) { setError(`Error ${r.status}`); return [] }
         return await r.json()

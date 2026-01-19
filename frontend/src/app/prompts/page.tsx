@@ -16,7 +16,7 @@ export default function Prompts() {
   const [newVersion, setNewVersion] = useState("")
   const [error, setError] = useState("")
   const load = () => {
-    apiGet<Prompt[]>("http://localhost:3000/prompts")
+    apiGet<Prompt[]>("/api/prompts")
       .then(setList)
       .catch((e) => setError(String(e)))
   }
@@ -24,7 +24,7 @@ export default function Prompts() {
   const create = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      await apiPostJson("http://localhost:3000/prompts", { name, content })
+      await apiPostJson("/api/prompts", { name, content })
       setName("")
       setContent("")
       load()
@@ -35,7 +35,7 @@ export default function Prompts() {
   const loadVersions = async (p: Prompt) => {
     setSelected(p)
     try {
-      const v = await apiGet<PromptVersion[]>(`http://localhost:3000/prompts/${p.id}/versions`)
+      const v = await apiGet<PromptVersion[]>(`/api/prompts/${p.id}/versions`)
       setVersions(v)
     } catch (e) {
       setError(String(e))
@@ -45,7 +45,7 @@ export default function Prompts() {
     e.preventDefault()
     if (!selected) return
     try {
-      await apiPostJson(`http://localhost:3000/prompts/${selected.id}/versions`, { content: newVersion })
+      await apiPostJson(`/api/prompts/${selected.id}/versions`, { content: newVersion })
       setNewVersion("")
       loadVersions(selected)
       load()

@@ -27,7 +27,7 @@ export default function ApiKeyFixedFields() {
     return m
   }, [rows])
   const load = () => {
-    apiGet<Row[]>("http://localhost:3000/settings/api-keys").then(setRows).catch((e) => setError(String(e)))
+    apiGet<Row[]>("/api/settings/api-keys").then(setRows).catch((e) => setError(String(e)))
   }
   useEffect(() => { load() }, [])
   const updateValue = (k: string, v: string) => {
@@ -37,7 +37,7 @@ export default function ApiKeyFixedFields() {
     const v = values[k] || ""
     if (!v) return
     try {
-      await apiPostJson("http://localhost:3000/settings/api-keys", { name: k, value: v })
+      await apiPostJson("/api/settings/api-keys", { name: k, value: v })
       updateValue(k, "")
       load()
     } catch (e) {
@@ -46,7 +46,7 @@ export default function ApiKeyFixedFields() {
   }
   const remove = async (k: string) => {
     try {
-      await apiDelete(`http://localhost:3000/settings/api-keys/${encodeURIComponent(k)}`)
+      await apiDelete(`/api/settings/api-keys/${encodeURIComponent(k)}`)
       updateValue(k, "")
       load()
     } catch (e) {

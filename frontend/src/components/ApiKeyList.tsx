@@ -9,7 +9,7 @@ export default function ApiKeyList({ refresh }: { refresh?: number }) {
   const [rows, setRows] = useState<Row[]>([])
   const [error, setError] = useState("")
   const load = () => {
-    apiGet<Row[]>("http://localhost:3000/settings/api-keys").then(setRows).catch((e) => setError(String(e)))
+    apiGet<Row[]>("/api/settings/api-keys").then(setRows).catch((e) => setError(String(e)))
   }
   useEffect(() => { load() }, [refresh])
   return (

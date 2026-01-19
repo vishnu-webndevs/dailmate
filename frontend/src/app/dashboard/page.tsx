@@ -11,7 +11,7 @@ export default function Dashboard() {
   const [data, setData] = useState<Overview | null>(null)
   const [error, setError] = useState<string>("")
   useEffect(() => {
-    apiGet<Overview>("http://localhost:3000/analytics/overview")
+    apiGet<Overview>("/api/analytics/overview")
       .then(setData)
       .catch((e) => setError(String(e)))
   }, [])

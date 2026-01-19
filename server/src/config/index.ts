@@ -21,7 +21,7 @@ export const config = {
   port: defaultPort,
   jwtSecret: process.env.JWT_SECRET || "changeme",
   publicUrl: defaultPublicUrl,
-  mediaStreamUrl: process.env.MEDIA_STREAM_URL || deriveWsUrlFromHttp(defaultPublicUrl),
+  mediaStreamUrl: process.env.MEDIA_STREAM_URL || (deriveWsUrlFromHttp(defaultPublicUrl) + "/media-stream"),
   logMediaFrames: bool(process.env.LOG_MEDIA_FRAMES),
   logMediaMarks: bool(process.env.LOG_MEDIA_MARKS),
   logTtsFrames: bool(process.env.LOG_TTS_FRAMES),

@@ -11,7 +11,7 @@ export default function Campaigns() {
     e.preventDefault()
     const fd = new FormData(e.currentTarget)
     try {
-      const data = await apiPostForm<{ total: number; queued: number }>("http://localhost:3000/campaigns/batch-call", fd)
+      const data = await apiPostForm<{ total: number; queued: number }>("/api/campaigns/batch-call", fd)
       setStatus(JSON.stringify(data))
     } catch (e) {
       setError(String(e))

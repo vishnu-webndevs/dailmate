@@ -1,6 +1,6 @@
 import { getToken, getRefreshToken } from "./auth"
 
-export const API_BASE = "https://8c30c067c881.ngrok-free.app"
+export const API_BASE = "/api"
 
 function resolveUrl(url: string) {
   if (url.startsWith("http://localhost:3000")) return url.replace("http://localhost:3000", API_BASE)

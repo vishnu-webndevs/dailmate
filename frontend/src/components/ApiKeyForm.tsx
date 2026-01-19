@@ -38,7 +38,7 @@ export default function ApiKeyForm({ onSaved }: { onSaved: () => void }) {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      await apiPostJson("http://localhost:3000/settings/api-keys", { name, value })
+      await apiPostJson("/api/settings/api-keys", { name, value })
       setName("")
       setValue("")
       onSaved()

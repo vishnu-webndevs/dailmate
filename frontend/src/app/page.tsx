@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 export default function Home() {
   const [health, setHealth] = useState<string>("")
   useEffect(() => {
-    fetch("http://localhost:3000/health")
+    fetch("/api/health")
       .then(r => r.json())
       .then(d => setHealth(JSON.stringify(d)))
       .catch(() => setHealth("unavailable"))
