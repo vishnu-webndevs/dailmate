@@ -26,8 +26,6 @@ services:
       - TWILIO_ACCOUNT_SID=${TWILIO_ACCOUNT_SID}
       - TWILIO_AUTH_TOKEN=${TWILIO_AUTH_TOKEN}
       - TWILIO_FROM=${TWILIO_FROM}
-    networks:
-      - app-network
 
   nginx:
     build: ./nginx
