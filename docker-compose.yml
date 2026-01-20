@@ -1,12 +1,16 @@
 services:
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
     restart: always
     environment:
       - NODE_ENV=production
 
   server:
-    build: ./server
+    build:
+      context: ./server
+      dockerfile: Dockerfile
     restart: always
     environment:
       - PORT=8000
