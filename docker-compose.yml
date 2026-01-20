@@ -26,7 +26,9 @@ services:
       - TWILIO_FROM=${TWILIO_FROM}
 
   nginx:
-    build: ./nginx
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
     restart: always
     expose:
       - "80"

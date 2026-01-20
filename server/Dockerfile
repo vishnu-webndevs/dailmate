@@ -2,7 +2,10 @@ FROM node:20-alpine
 WORKDIR /app
 
 # Copy package files first for better caching
-COPY package.json package-lock.json* yarn.lock* pnpm-lock.yaml* ./
+COPY package.json ./
+COPY package-lock.json* ./
+COPY yarn.lock* ./
+COPY pnpm-lock.yml* ./
 
 # Install dependencies
 RUN npm install
