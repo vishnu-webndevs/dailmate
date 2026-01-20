@@ -72,12 +72,12 @@ export async function apiGet<T>(url: string): Promise<T> {
 
 export async function apiDelete<T>(url: string): Promise<T> {
   const token = getToken()
-  let r = await fetch(url, { method: "DELETE", headers: { Authorization: `Bearer ${token}` } })
+  let r = await fetch(resolveUrl(url), { method: "DELETE", headers: { Authorization: `Bearer ${token}` } })
   if (r.status === 401) {
     try {
       await refreshAccessToken()
       const token2 = getToken()
-      r = await fetch(url, { method: "DELETE", headers: { Authorization: `Bearer ${token2}` } })
+      r = await fetch(resolveUrl(url), { method: "DELETE", headers: { Authorization: `Bearer ${token2}` } })
     } catch (err) {
       console.info("[api] delete unauthorized, session expired", { url, error: String(err) })
       throw err
