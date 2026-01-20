@@ -1,19 +1,19 @@
 FROM node:20-alpine
+
 WORKDIR /app
 
-# Copy package files first for better caching
-COPY package.json ./
-COPY package-lock.json* ./
-COPY yarn.lock* ./
-COPY pnpm-lock.yml* ./
+# Install deps first
+COPY package.json package-lock.json* ./
+RUN npm ci
 
-# Install dependencies
-RUN npm install
-
-# Copy all source files
+# Copy source
 COPY . .
 
-# Build the application
+# Build
 RUN npm run build
 
-CMD ["node","dist/server.js"]
+# Expose backend port
+EXPOSE 8000
+
+# Start server
+CMD ["node", "dist/server.js"]

@@ -37,7 +37,9 @@ services:
       dockerfile: Dockerfile
     restart: always
     expose:
-      - "80"
+      - "8000"
+    environment:
+      - PORT=8000
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.dailmate-nginx.rule=Host(`dailmate.webndevs.com`)"
