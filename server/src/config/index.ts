@@ -27,11 +27,11 @@ export const config = {
   logTtsFrames: bool(process.env.LOG_TTS_FRAMES),
   logSttEvents: bool(process.env.LOG_STT_EVENTS),
   mysql: {
-    host: process.env.MYSQL_HOST || "localhost",
-    port: Number(process.env.MYSQL_PORT || 3306),
-    user: process.env.MYSQL_USER || "root",
-    password: process.env.MYSQL_PASSWORD || "",
-    database: process.env.MYSQL_DATABASE || "wnd-ai"
+    host: process.env.MYSQL_HOST || process.env.DB_HOST || "localhost",
+    port: Number(process.env.MYSQL_PORT || process.env.DB_PORT || 3306),
+    user: process.env.MYSQL_USER || process.env.DB_USERNAME || "root",
+    password: process.env.MYSQL_PASSWORD || process.env.DB_PASSWORD || "",
+    database: process.env.MYSQL_DATABASE || process.env.DB_DATABASE || "wnd-ai"
   },
   aiProvider: process.env.AI_PROVIDER || "mock",
   forceHindi: bool(process.env.FORCE_HINDI)
