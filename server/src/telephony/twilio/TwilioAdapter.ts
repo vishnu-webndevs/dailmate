@@ -63,20 +63,25 @@ export class TwilioAdapter implements TelephonyAdapter {
     return { queued: true, sid: data.sid }
   }
   async hangup(callId: string): Promise<boolean> {
-    const { sid, token } = await this.creds()
-    if (!sid || !token) return false
-    const url = `https://api.twilio.com/2010-04-01/Accounts/${sid}/Calls/${callId}.json`
-    const body = new URLSearchParams({ Status: "completed" })
-    const res = await fetch(url, {
-      method: "POST",
-      headers: {
-        Authorization: "Basic " + Buffer.from(`${sid}:${token}`).toString("base64"),
-        "Content-Type": "application/x-www-form-urlencoded"
-      },
-      body
-    })
-    console.log("⌛[TwilioAdapter] Hangup requested", { callId, ok: res.ok })
-    return res.ok
+    try {
+      const { sid, token } = await this.creds()
+      if (!sid || !token) return false
+      const url = `https://api.twilio.com/2010-04-01/Accounts/${sid}/Calls/${callId}.json`
+      const body = new URLSearchParams({ Status: "completed" })
+      const res = await fetch(url, {
+        method: "POST",
+        headers: {
+          Authorization: "Basic " + Buffer.from(`${sid}:${token}`).toString("base64"),
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body
+      })
+      console.log("⌛[TwilioAdapter] Hangup requested", { callId, ok: res.ok })
+      return res.ok
+    } catch (err) {
+      console.error("❗[TwilioAdapter] Hangup failed", { callId, err })
+      return false
+    }
   }
   async listNumbers(): Promise<Array<{ phoneNumber: string; friendlyName?: string }>> {
     const { sid, token } = await this.creds()

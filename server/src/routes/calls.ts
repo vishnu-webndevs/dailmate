@@ -9,12 +9,17 @@ const plugin: FastifyPluginAsync = async (app) => {
     return callService.live()
   })
   app.post("/:id/hangup", { preHandler: async (req) => { await req.jwtVerify() } }, async (req, reply) => {
-    const id = (req.params as { id: string }).id
-    app.log.info({ callId: id }, "⌛[TwilioController] Hangup request")
-    const ok = await adapter.hangup(id)
-    await callService.update(id, { status: "ended", endedAt: new Date() })
-    app.log.info({ callId: id, ok }, "⌛[TwilioController] Hangup complete")
-    reply.send({ ok })
+    try {
+      const id = (req.params as { id: string }).id
+      app.log.info({ callId: id }, "⌛[TwilioController] Hangup request")
+      const ok = await adapter.hangup(id)
+      await callService.update(id, { status: "ended", endedAt: new Date() })
+      app.log.info({ callId: id, ok }, "⌛[TwilioController] Hangup complete")
+      reply.send({ ok })
+    } catch (err) {
+      app.log.error(err, "💥[TwilioController] Hangup error")
+      reply.status(500).send({ error: "Failed to hangup call" })
+    }
   })
 }
 
