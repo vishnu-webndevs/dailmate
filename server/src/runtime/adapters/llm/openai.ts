@@ -64,6 +64,26 @@ export class OpenAiLLM implements LLMProvider {
 
     const trimmedHistory = history.slice(-8)
 
+    const tools = [
+      {
+        type: "function",
+        function: {
+          name: "end_call",
+          description: "End the call when the user says goodbye, wants to hang up, or the conversation is finished.",
+          parameters: {
+            type: "object",
+            properties: {
+              message: {
+                type: "string",
+                description: "The final message to speak before hanging up. For Hindi users, use 'आपका कीमती समय देने के लिए धन्यवाद' (Thank you for your valuable time) or similar polite closing."
+              }
+            },
+            required: ["message"]
+          }
+        }
+      }
+    ]
+
     const url = "https://api.openai.com/v1/chat/completions"
     const body = {
       model: "gpt-4o-mini",
@@ -72,6 +92,8 @@ export class OpenAiLLM implements LLMProvider {
         ...trimmedHistory.map((m) => ({ role: m.role === "assistant" ? "assistant" as const : "user" as const, content: m.content })),
         { role: "user", content: input }
       ],
+      tools,
+      tool_choice: "auto",
       temperature: 0.6,
       frequency_penalty: 0.2,
       presence_penalty: 0.1,
@@ -85,8 +107,27 @@ export class OpenAiLLM implements LLMProvider {
     if (!res.ok) {
       return { type: "text", text: input }
     }
-    const data = await res.json() as unknown as { choices?: Array<{ message?: { content?: string } }> }
-    const text = data.choices?.[0]?.message?.content || ""
+    const data = await res.json() as unknown as { choices?: Array<{ finish_reason?: string; message?: { content?: string; tool_calls?: Array<{ function: { name: string; arguments: string } }> } }> }
+    
+    const choice = data.choices?.[0]
+    if (choice?.finish_reason === "tool_calls" && choice.message?.tool_calls) {
+      const toolCall = choice.message.tool_calls.find(tc => tc.function.name === "end_call")
+      if (toolCall) {
+         try {
+           return {
+             type: "function_call",
+             call: {
+               name: "end_call",
+               arguments: JSON.parse(toolCall.function.arguments)
+             }
+           }
+         } catch {
+           // fallback to text if parsing fails
+         }
+      }
+    }
+
+    const text = choice?.message?.content || ""
     return { type: "text", text: text || input }
   }
 }
