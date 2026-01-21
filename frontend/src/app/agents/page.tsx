@@ -33,6 +33,7 @@ export default function Agents() {
   const testNumbers = ["+919672977977", "+919887603015", "+919983409509"]
   const [testResult, setTestResult] = useState<string>("")
   const [isCreating, setIsCreating] = useState(false)
+  const [isManualNumber, setIsManualNumber] = useState(false)
 
   const load = () => {
     apiGet<Agent[]>("/api/agents")
@@ -101,6 +102,7 @@ export default function Agents() {
   const openTest = (a: Agent) => {
     setTestAgent(a)
     setTestTo(testNumbers[0])
+    setIsManualNumber(false)
     setTestPromptId("")
     setTestResult("")
   }
@@ -299,17 +301,45 @@ export default function Agents() {
                 <form className="space-y-4" onSubmit={runTest}>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Test Number</label>
-                    <input 
-                      type="tel"
-                      className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none bg-white" 
-                      value={testTo} 
-                      onChange={e => setTestTo(e.target.value)}
-                      placeholder="Enter number (e.g., +91...)"
-                      list="test-numbers"
-                    />
-                    <datalist id="test-numbers">
-                      {testNumbers.map(n => <option key={n} value={n} />)}
-                    </datalist>
+                    {!isManualNumber ? (
+                      <select 
+                        className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none bg-white" 
+                        value={testTo} 
+                        onChange={e => {
+                          if (e.target.value === 'manual') {
+                            setIsManualNumber(true)
+                            setTestTo('')
+                          } else {
+                            setTestTo(e.target.value)
+                          }
+                        }}
+                      >
+                        {testNumbers.map(n => <option key={n} value={n}>{n}</option>)}
+                        <option value="manual">+ Enter new number...</option>
+                      </select>
+                    ) : (
+                      <div className="flex gap-2">
+                        <input 
+                          type="tel"
+                          autoFocus
+                          className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none bg-white" 
+                          value={testTo} 
+                          onChange={e => setTestTo(e.target.value)}
+                          placeholder="Enter number (e.g., +91...)"
+                        />
+                        <button 
+                          type="button"
+                          onClick={() => {
+                            setIsManualNumber(false)
+                            setTestTo(testNumbers[0] || "")
+                          }}
+                          className="px-3 py-2 text-gray-500 bg-gray-100 hover:bg-gray-200 rounded-lg border border-gray-200"
+                          title="Select from list"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+                        </button>
+                      </div>
+                    )}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Override Prompt (Optional)</label>
