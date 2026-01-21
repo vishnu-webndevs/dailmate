@@ -12,17 +12,19 @@ const debugRoutes: FastifyPluginAsync = async (app) => {
       }
       const files = fs.readdirSync(debugDir)
         .filter(f => f.endsWith(".mp3"))
-        .sort((a, b) => {
-           // Sort by timestamp descending (tts_123_desc.ext)
-           const tA = Number(a.split("_")[1]) || 0
-           const tB = Number(b.split("_")[1]) || 0
-           return tB - tA
+        .map(f => {
+          const filePath = path.join(debugDir, f)
+          const stats = fs.statSync(filePath)
+          return {
+            name: f,
+            url: `${request.protocol}://${request.hostname}/debug/files/${f}`,
+            ts: stats.mtime.toISOString(),
+            mtimeMs: stats.mtimeMs
+          }
         })
-        .map(f => ({
-          name: f,
-          url: `${request.protocol}://${request.hostname}/debug/files/${f}`,
-          ts: new Date(Number(f.split("_")[1]) || 0).toISOString()
-        }))
+        .sort((a, b) => b.mtimeMs - a.mtimeMs)
+        .map(({ name, url, ts }) => ({ name, url, ts }))
+      
       return files
     } catch (err) {
       request.log.error(err)
