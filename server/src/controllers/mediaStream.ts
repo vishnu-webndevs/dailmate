@@ -133,6 +133,24 @@ const plugin: FastifyPluginAsync = async (app) => {
     if (config.logTtsFrames) app.log.info({ streamSid, frames: c }, "⌛[WebSocketController] TTS frames scheduled")
   }
 
+  async function cleanupStream(streamSid: string) {
+    const s = sessions.get(streamSid)
+    if (!s) return
+
+    app.log.info({ streamSid, inFrames: s.inFrames, outFrames: s.outFrames }, "⌛[WebSocketController] Stream cleanup")
+    stopAudio(streamSid)
+    if (s.stt.disconnect) s.stt.disconnect()
+    
+    sessions.delete(streamSid)
+    sockets.delete(streamSid)
+    
+    if (s.callId) {
+      byCall.delete(s.callId)
+      await callService.update(s.callId, { status: "ended", endedAt: new Date() })
+      app.log.info({ callSid: s.callId }, "⌛[WebSocketController] Call status ENDED (cleanup)")
+    }
+  }
+
   function computeQualityScore(text: string, latencyMs: number) {
     const wordCount = text.split(/\s+/).filter(Boolean).length
     const tooShort = wordCount < 3
@@ -154,24 +172,15 @@ const plugin: FastifyPluginAsync = async (app) => {
     }
   }
 
-  const handleConnection = (connection: { socket: unknown }, req: any) => {
+  const handleConnection = (connection: { socket: unknown }) => {
     const ws = connection.socket as unknown as WsLike
-    const query = (req.query || {}) as { from?: string; to?: string }
-    let streamSid: string | undefined
-    let callSid: string | undefined
-    app.log.info({ from: query.from, to: query.to }, "⌛[WebSocketController] New Connection Initiated with params")
+    let currentStreamSid: string | undefined
+    app.log.info("⌛[WebSocketController] New Connection Initiated")
 
-    ws.on("close", async () => {
-      app.log.info("⌛[WebSocketController] WebSocket connection closed")
-      if (callSid) {
-        const id = callSid
-        await callService.update(id, { status: "ended", endedAt: new Date() })
-        app.log.info({ callSid: id }, "⌛[WebSocketController] Call status ENDED (via close)")
-        byCall.delete(id)
-      }
-      if (streamSid) {
-        sessions.delete(streamSid)
-        sockets.delete(streamSid)
+    ws.on("close", () => {
+      app.log.info({ streamSid: currentStreamSid }, "⌛[WebSocketController] WebSocket connection closed")
+      if (currentStreamSid) {
+        void cleanupStream(currentStreamSid)
       }
     })
 
@@ -198,9 +207,8 @@ const plugin: FastifyPluginAsync = async (app) => {
         }
 
         if (msg.event === "start") {
-          streamSid = msg.start.streamSid
-          callSid = msg.start.callSid
           const id = msg.start.callSid
+          currentStreamSid = msg.start.streamSid
           byCall.set(id, msg.start.streamSid)
           sockets.set(msg.start.streamSid, { send: (data: string) => ws.send(data) })
           app.log.info({ streamSid: msg.start.streamSid, callSid: id, tracks: msg.start.tracks || [], mediaFormat: msg.start.mediaFormat || {} }, "⌛[WebSocketController] Media Stream start")
@@ -307,14 +315,7 @@ const plugin: FastifyPluginAsync = async (app) => {
             promptText,
             history: []
           })
-          // Try to update existing record first (preserve from/to)
-          await callService.update(id, { 
-             status: "live", 
-             startedAt: new Date(),
-             ...(query.from ? { from: query.from } : {}),
-             ...(query.to ? { to: query.to } : {})
-          })
-          
+          await callService.upsert({ id, status: "live", startedAt: new Date() })
           app.log.info({ callSid: id }, "⌛[WebSocketController] Call status LIVE")
 
           try {
@@ -448,29 +449,19 @@ const plugin: FastifyPluginAsync = async (app) => {
 
         if (msg.event === "stop") {
           const sid = msg.streamSid
-          const s = sid ? sessions.get(sid) : undefined
-          const id = s?.callId || Array.from(callService.live()).at(0)?.id
-          if (id) byCall.delete(id)
-          app.log.info("⌛[WebSocketController] Call has ended, Stopping Media Stream")
-
-          const sids = Array.from(sessions.keys())
-          for (const sid of sids) {
-            const sess = sessions.get(sid)
-            if (sess) {
-              app.log.info({ streamSid: sid, inFrames: sess.inFrames, outFrames: sess.outFrames }, "⌛[WebSocketController] Stream frames")
-              
-              stopAudio(sid)
-
-              if (sess.stt.disconnect) {
-                 sess.stt.disconnect()
-              }
-            }
+          app.log.info({ streamSid: sid }, "⌛[WebSocketController] Call has ended, Stopping Media Stream")
+          
+          if (sid) {
+            await cleanupStream(sid)
+          } else {
+            // Fallback: if no streamSid in stop message, try to find by callId (legacy/fallback)
+             const id = Array.from(callService.live()).at(0)?.id
+             if (id) {
+               const foundSid = byCall.get(id)
+               if (foundSid) await cleanupStream(foundSid)
+               else await callService.update(id, { status: "ended", endedAt: new Date() })
+             }
           }
-          sockets.clear()
-          sessions.clear()
-
-          if (id) await callService.update(id, { status: "ended", endedAt: new Date() })
-          if (id) app.log.info({ callSid: id }, "⌛[WebSocketController] Call status ENDED")
           return
         }
 
