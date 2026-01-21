@@ -28,7 +28,10 @@ export class TwilioAdapter implements TelephonyAdapter {
     const body = new URLSearchParams({
       From: from,
       To: req.to,
-      Twiml: this.inboundTwiml(config.mediaStreamUrl)
+      Twiml: this.inboundTwiml(config.mediaStreamUrl),
+      StatusCallback: `${config.publicUrl}/api/twilio/status`,
+      StatusCallbackEvent: "initiated ringing answered completed",
+      StatusCallbackMethod: "POST"
     })
     const res = await fetch(url, {
       method: "POST",

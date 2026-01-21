@@ -3,6 +3,8 @@ import { TwilioAdapter } from "../telephony/twilio/TwilioAdapter.js"
 import { z } from "zod"
 import { agentService } from "../services/agentService.js"
 import { config } from "../config/index.js"
+import { callService } from "../services/callService.js"
+import "@fastify/jwt"
 
 const outboundSchema = z.object({
   to: z.string().min(5),
@@ -18,6 +20,24 @@ const plugin: FastifyPluginAsync = async (app) => {
     app.log.info({ mediaUrl }, "⌛[TwilioController] Inbound served")
     reply.header("Content-Type", "text/xml").send(xml)
   })
+  
+  app.post("/status", async (req, reply) => {
+    const body = req.body as { CallSid: string; CallStatus: string; CallDuration?: string }
+    const { CallSid, CallStatus } = body
+    
+    app.log.info({ CallSid, CallStatus }, "⌛[TwilioController] Status Callback")
+    
+    if (["completed", "failed", "busy", "no-answer", "canceled"].includes(CallStatus)) {
+      await callService.update(CallSid, { status: "ended", endedAt: new Date() })
+      app.log.info({ CallSid, status: "ended" }, "⌛[TwilioController] Call marked as ended via callback")
+    } else if (CallStatus === "in-progress") {
+      // Optional: mark as live if not already
+      // await callService.update(CallSid, { status: "live" })
+    }
+    
+    reply.send({ ok: true })
+  })
+
   app.get("/numbers", { preHandler: async (req) => { await req.jwtVerify() } }, async (_req, reply) => {
     const list = await adapter.listNumbers()
     app.log.info({ count: list.length }, "⌛[TwilioController] Numbers list")
