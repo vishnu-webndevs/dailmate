@@ -34,7 +34,8 @@ export class TwilioAdapter implements TelephonyAdapter {
       Twiml: this.inboundTwiml(config.mediaStreamUrl, { from, to: req.to }),
       StatusCallback: `${config.publicUrl}/api/twilio/status`,
       StatusCallbackEvent: "initiated ringing answered completed",
-      StatusCallbackMethod: "POST"
+      StatusCallbackMethod: "POST",
+      Record: "true"
     })
     const res = await fetch(url, {
       method: "POST",

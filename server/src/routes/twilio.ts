@@ -23,14 +23,14 @@ const plugin: FastifyPluginAsync = async (app) => {
   })
   
   app.post("/status", async (req, reply) => {
-    const body = req.body as { CallSid: string; CallStatus: string; CallDuration?: string }
-    const { CallSid, CallStatus } = body
+    const body = req.body as { CallSid: string; CallStatus: string; CallDuration?: string; RecordingUrl?: string }
+    const { CallSid, CallStatus, RecordingUrl } = body
     
     app.log.info({ CallSid, CallStatus }, "⌛[TwilioController] Status Callback")
     
     if (["completed", "failed", "busy", "no-answer", "canceled"].includes(CallStatus)) {
-      await callService.update(CallSid, { status: "ended", endedAt: new Date() })
-      app.log.info({ CallSid, status: "ended" }, "⌛[TwilioController] Call marked as ended via callback")
+      await callService.update(CallSid, { status: "ended", endedAt: new Date(), recordingUrl: RecordingUrl })
+      app.log.info({ CallSid, status: "ended", recordingUrl: RecordingUrl }, "⌛[TwilioController] Call marked as ended via callback")
     } else if (CallStatus === "in-progress") {
       // Optional: mark as live if not already
       // await callService.update(CallSid, { status: "live" })
