@@ -10,7 +10,7 @@ export class TwilioAdapter implements TelephonyAdapter {
     const url = new URL(mediaUrl)
     if (params?.from) url.searchParams.set("from", params.from)
     if (params?.to) url.searchParams.set("to", params.to)
-    const s = url.toString()
+    const s = url.toString().replace(/&/g, "&amp;")
     console.log("⌛[TwilioAdapter] Inbound TwiML generated", { mediaUrl: s })
     return `<?xml version="1.0" encoding="UTF-8"?><Response><Connect><Stream url="${s}"/></Connect><Pause length="1"/></Response>`
   }
