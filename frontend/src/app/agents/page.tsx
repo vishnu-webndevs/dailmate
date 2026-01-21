@@ -289,7 +289,14 @@ export default function Agents() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Voice</label>
-                      <input className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none" value={editVoice} onChange={e => setEditVoice(e.target.value)} />
+                      {voices.length > 0 ? (
+                        <select className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none bg-white" value={editVoice} onChange={e => setEditVoice(e.target.value)}>
+                          <option value="">Select Voice ID</option>
+                          {voices.map(v => <option key={v.id} value={v.id}>{v.name}</option>)}
+                        </select>
+                      ) : (
+                        <input className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none" value={editVoice} onChange={e => setEditVoice(e.target.value)} />
+                      )}
                     </div>
                   </div>
                   
