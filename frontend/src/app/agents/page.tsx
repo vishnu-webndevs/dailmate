@@ -298,10 +298,18 @@ export default function Agents() {
               <div className="p-6">
                 <form className="space-y-4" onSubmit={runTest}>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Select Test Number</label>
-                    <select className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none bg-white" value={testTo} onChange={e => setTestTo(e.target.value)}>
-                      {testNumbers.map(n => <option key={n} value={n}>{n}</option>)}
-                    </select>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Test Number</label>
+                    <input 
+                      type="tel"
+                      className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none bg-white" 
+                      value={testTo} 
+                      onChange={e => setTestTo(e.target.value)}
+                      placeholder="Enter number (e.g., +91...)"
+                      list="test-numbers"
+                    />
+                    <datalist id="test-numbers">
+                      {testNumbers.map(n => <option key={n} value={n} />)}
+                    </datalist>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Override Prompt (Optional)</label>
