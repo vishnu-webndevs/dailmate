@@ -75,8 +75,35 @@ async function upsert(rec: CallRecord) {
   }
 }
 
+async function fetchFromDb(id: string): Promise<CallRecord | undefined> {
+  try {
+    const db = getMysql()
+    const [rows] = await db.query("SELECT * FROM calls WHERE id = ?", [id]) as any
+    if (rows && rows.length > 0) {
+      const r = rows[0]
+      return {
+        id: r.id,
+        from: r.from,
+        to: r.to,
+        agentId: r.agentId,
+        voice: r.voice,
+        promptId: r.promptId,
+        status: r.status,
+        startedAt: r.startedAt,
+        endedAt: r.endedAt,
+        recordingUrl: r.recordingUrl
+      }
+    }
+  } catch {
+    return undefined
+  }
+}
+
 async function update(id: string, patch: Partial<CallRecord>) {
-  const existing = inMemory.get(id)
+  let existing = inMemory.get(id)
+  if (!existing) {
+    existing = await fetchFromDb(id)
+  }
   const rec = { ...(existing || { id, status: "starting", startedAt: new Date() }), ...patch }
   await upsert(rec)
 }
