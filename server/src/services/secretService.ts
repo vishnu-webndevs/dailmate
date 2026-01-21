@@ -1,4 +1,4 @@
-import { createDecipheriv } from "crypto"
+import { createDecipheriv, createCipheriv, randomBytes } from "crypto"
 import { getMysql } from "../db/mysql.js"
 import { config } from "../config/index.js"
 
@@ -6,6 +6,14 @@ const algo = "aes-256-gcm"
 function getKey() {
   const key = Buffer.from((process.env.SECRET_STORE_KEY || config.jwtSecret).padEnd(32, "0")).subarray(0, 32)
   return key
+}
+
+function encrypt(text: string) {
+  const iv = randomBytes(12)
+  const cipher = createCipheriv(algo, getKey(), iv)
+  const enc = Buffer.concat([cipher.update(text, "utf8"), cipher.final()])
+  const tag = cipher.getAuthTag()
+  return `${iv.toString("base64")}:${enc.toString("base64")}:${tag.toString("base64")}`
 }
 
 function decrypt(blob: string) {
@@ -40,7 +48,7 @@ async function upsert(name: string, value: string) {
   try {
     const db = getMysql()
     const now = new Date()
-    const blob = value
+    const blob = encrypt(value)
     await db.query(
       "INSERT INTO api_keys (name, value_enc, createdAt, updatedAt) VALUES (?,?,?,?) ON DUPLICATE KEY UPDATE value_enc=VALUES(value_enc), updatedAt=VALUES(updatedAt)",
       [name, blob, now, now]
@@ -85,13 +93,19 @@ async function get(name: string) {
     const db = getMysql()
     const [rows] = await db.query("SELECT value_enc FROM api_keys WHERE name = ? LIMIT 1", [name])
     const r = (rows as Array<{ value_enc: string }>)[0]
-    if (!r) return ""
+    if (!r) {
+      console.log(`⚠️[SecretService] Key not found: ${name}`)
+      return ""
+    }
     try {
-      return decrypt(r.value_enc)
-    } catch {
+      const val = decrypt(r.value_enc)
+      return val
+    } catch (err) {
+      console.log(`⚠️[SecretService] Decrypt failed for ${name}, returning raw value`)
       return r.value_enc || ""
     }
-  } catch {
+  } catch (err) {
+    console.error(`💥[SecretService] Error getting key ${name}:`, err)
     return ""
   }
 }

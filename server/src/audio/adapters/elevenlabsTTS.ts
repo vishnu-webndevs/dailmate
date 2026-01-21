@@ -14,10 +14,10 @@ export class ElevenLabsTTS implements TTSProvider {
     const apiKey = await this.getApiKey()
     if (!apiKey) return ""
     const globalKey = this.lang === "hi" ? "ELEVENLABS_VOICE_ID_HI" : "ELEVENLABS_VOICE_ID"
-    const v = this.voiceId || (await secretService.get(globalKey)) || (await secretService.get("ELEVENLABS_VOICE_ID")) || ""
+    let v = this.voiceId || (await secretService.get(globalKey)) || (await secretService.get("ELEVENLABS_VOICE_ID")) || ""
     if (!v) {
-      console.log("❗[ElevenLabsTTS] No voice id configured")
-      return ""
+      console.log("⚠️[ElevenLabsTTS] No voice id configured, using default")
+      v = "21m00Tcm4TlvDq8ikWAM" // Default to Rachel
     }
 
     console.log("[ElevenLabsTTS] Using voice id", v, "lang", this.lang)

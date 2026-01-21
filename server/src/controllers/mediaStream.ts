@@ -196,6 +196,8 @@ const plugin: FastifyPluginAsync = async (app) => {
 
           try {
             const apiKey = process.env.ELEVENLABS_API_KEY || await secretService.get("ELEVENLABS_API_KEY") || ""
+            app.log.info({ streamSid: msg.start.streamSid, hasApiKey: !!apiKey }, "🔍[WebSocketController] Checking ElevenLabs API Key")
+            
             const call = callService.get(id)
             if (call?.agentId !== undefined) {
               try {
@@ -231,7 +233,8 @@ const plugin: FastifyPluginAsync = async (app) => {
               stt = new DeepgramSTT()
             }
             app.log.info({ streamSid: msg.start.streamSid, stt: dgKey ? "deepgram" : "mock", tts: apiKey ? "elevenlabs" : "mock" }, "⌛[WebSocketController] Audio providers selected")
-          } catch {
+          } catch (err) {
+            app.log.error({ err, stack: (err as Error).stack }, "❗[WebSocketController] Error selecting audio providers, falling back to MockTTS")
             tts = new MockTTS()
           }
 

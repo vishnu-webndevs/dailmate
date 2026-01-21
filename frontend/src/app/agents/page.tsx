@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react"
 import PageHeader from "../../components/PageHeader"
 import ErrorAlert from "../../components/ErrorAlert"
-import { apiGet, apiPostJson, apiPutJson } from "../../lib/api"
+import { apiGet, apiPostJson, apiPutJson, apiDelete } from "../../lib/api"
 
 type Agent = { id: number; name: string; description?: string; promptId?: string; twilioFrom?: string; voice?: string; language: "en" | "hi" }
 type Prompt = { id: string; name: string; activeVersion: number }
@@ -119,6 +119,16 @@ export default function Agents() {
     }
   }
 
+  const deleteAgent = async (a: Agent) => {
+    if (!confirm(`Are you sure you want to delete agent "${a.name}"?`)) return
+    try {
+      await apiDelete(`/api/agents/${a.id}`)
+      load()
+    } catch (err) {
+      setError(String(err))
+    }
+  }
+
   return (
       <div className="space-y-6">
         <PageHeader title="Agents Management" />
@@ -232,6 +242,8 @@ export default function Agents() {
                         <button className="text-blue-600 hover:text-blue-900 font-medium text-sm" onClick={() => openEdit(a)}>Edit</button>
                         <span className="text-gray-300">|</span>
                         <button className="text-green-600 hover:text-green-900 font-medium text-sm" onClick={() => openTest(a)}>Test</button>
+                        <span className="text-gray-300">|</span>
+                        <button className="text-red-600 hover:text-red-900 font-medium text-sm" onClick={() => deleteAgent(a)}>Delete</button>
                       </div>
                     </td>
                   </tr>

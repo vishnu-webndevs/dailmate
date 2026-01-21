@@ -85,6 +85,16 @@ async function update(id: number, patch: Partial<Omit<Agent, "id">>): Promise<Ag
   }
 }
 
+async function remove(id: number): Promise<boolean> {
+  try {
+    const db = getMysql()
+    await db.query("DELETE FROM agents WHERE id = ?", [id])
+    return true
+  } catch {
+    return false
+  }
+}
+
 async function removeAll() {
   try {
     const db = getMysql()
@@ -94,4 +104,4 @@ async function removeAll() {
   }
 }
 
-export const agentService = { init, list, getById, create, update, removeAll }
+export const agentService = { init, list, getById, create, update, remove, removeAll }

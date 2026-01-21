@@ -31,6 +31,11 @@ const plugin: FastifyPluginAsync = async (app) => {
     }
     reply.send(agent)
   })
+  app.delete("/:id", { preHandler: async (req) => { await req.jwtVerify() } }, async (req, reply) => {
+    const id = Number((req.params as { id: string }).id)
+    const ok = await agentService.remove(id)
+    reply.send({ ok })
+  })
 }
 
 export default plugin
