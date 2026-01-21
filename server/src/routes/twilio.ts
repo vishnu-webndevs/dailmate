@@ -16,24 +16,37 @@ const plugin: FastifyPluginAsync = async (app) => {
   const adapter = new TwilioAdapter()
   app.post("/inbound", async (req, reply) => {
     const mediaUrl = config.mediaStreamUrl
-    const body = req.body as { From?: string; To?: string }
-    const xml = adapter.inboundTwiml(mediaUrl, { from: body.From, to: body.To })
-    app.log.info({ mediaUrl, from: body.From, to: body.To }, "⌛[TwilioController] Inbound served")
+    const xml = adapter.inboundTwiml(mediaUrl)
+    app.log.info({ mediaUrl }, "⌛[TwilioController] Inbound served")
     reply.header("Content-Type", "text/xml").send(xml)
   })
   
   app.post("/status", async (req, reply) => {
-    const body = req.body as { CallSid: string; CallStatus: string; CallDuration?: string; RecordingUrl?: string }
-    const { CallSid, CallStatus, RecordingUrl } = body
+    const body = req.body as { CallSid: string; CallStatus: string; CallDuration?: string }
+    const { CallSid, CallStatus } = body
     
     app.log.info({ CallSid, CallStatus }, "⌛[TwilioController] Status Callback")
     
     if (["completed", "failed", "busy", "no-answer", "canceled"].includes(CallStatus)) {
-      await callService.update(CallSid, { status: "ended", endedAt: new Date(), recordingUrl: RecordingUrl })
-      app.log.info({ CallSid, status: "ended", recordingUrl: RecordingUrl }, "⌛[TwilioController] Call marked as ended via callback")
+      await callService.update(CallSid, { status: "ended", endedAt: new Date() })
+      app.log.info({ CallSid, status: "ended" }, "⌛[TwilioController] Call marked as ended via callback")
     } else if (CallStatus === "in-progress") {
       // Optional: mark as live if not already
       // await callService.update(CallSid, { status: "live" })
+    }
+    
+    reply.send({ ok: true })
+  })
+
+  app.post("/recording", async (req, reply) => {
+    const body = req.body as { CallSid: string; RecordingUrl: string; RecordingStatus: string }
+    const { CallSid, RecordingUrl, RecordingStatus } = body
+    
+    app.log.info({ CallSid, RecordingUrl, RecordingStatus }, "⌛[TwilioController] Recording Callback")
+    
+    if (RecordingStatus === "completed" && RecordingUrl) {
+      await callService.update(CallSid, { recordingUrl: RecordingUrl })
+      app.log.info({ CallSid, recordingUrl: RecordingUrl }, "⌛[TwilioController] Recording URL saved")
     }
     
     reply.send({ ok: true })

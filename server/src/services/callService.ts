@@ -70,7 +70,9 @@ async function upsert(rec: CallRecord) {
       "REPLACE INTO calls (id, `from`, `to`, agentId, voice, promptId, status, startedAt, endedAt, recordingUrl) VALUES (?,?,?,?,?,?,?,?,?,?)",
       [rec.id, rec.from || null, rec.to || null, rec.agentId || null, rec.voice || null, rec.promptId || null, rec.status, rec.startedAt, rec.endedAt || null, rec.recordingUrl || null]
     )
-  } catch {
+    // console.log("Did upsert", rec)
+  } catch (err) {
+    console.error("Upsert failed", err)
     return
   }
 }

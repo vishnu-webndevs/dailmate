@@ -6,11 +6,8 @@ import { callService } from "../../services/callService.js"
 import { agentService } from "../../services/agentService.js"
 
 export class TwilioAdapter implements TelephonyAdapter {
-  inboundTwiml(mediaUrl: string, params?: { from?: string; to?: string }): string {
-    const url = new URL(mediaUrl)
-    if (params?.from) url.searchParams.set("from", params.from)
-    if (params?.to) url.searchParams.set("to", params.to)
-    const s = url.toString().replace(/&/g, "&amp;")
+  inboundTwiml(mediaUrl: string): string {
+    const s = mediaUrl
     console.log("⌛[TwilioAdapter] Inbound TwiML generated", { mediaUrl: s })
     return `<?xml version="1.0" encoding="UTF-8"?><Response><Connect><Stream url="${s}"/></Connect><Pause length="1"/></Response>`
   }
@@ -31,11 +28,13 @@ export class TwilioAdapter implements TelephonyAdapter {
     const body = new URLSearchParams({
       From: from,
       To: req.to,
-      Twiml: this.inboundTwiml(config.mediaStreamUrl, { from, to: req.to }),
+      Twiml: this.inboundTwiml(config.mediaStreamUrl),
       StatusCallback: `${config.publicUrl}/api/twilio/status`,
       StatusCallbackEvent: "initiated ringing answered completed",
       StatusCallbackMethod: "POST",
-      Record: "true"
+      Record: "true",
+      RecordingStatusCallback: `${config.publicUrl}/api/twilio/recording`,
+      RecordingStatusCallbackEvent: "completed"
     })
     const res = await fetch(url, {
       method: "POST",
