@@ -6,8 +6,11 @@ import { callService } from "../../services/callService.js"
 import { agentService } from "../../services/agentService.js"
 
 export class TwilioAdapter implements TelephonyAdapter {
-  inboundTwiml(mediaUrl: string): string {
-    const s = mediaUrl
+  inboundTwiml(mediaUrl: string, params?: { from?: string; to?: string }): string {
+    const url = new URL(mediaUrl)
+    if (params?.from) url.searchParams.set("from", params.from)
+    if (params?.to) url.searchParams.set("to", params.to)
+    const s = url.toString()
     console.log("⌛[TwilioAdapter] Inbound TwiML generated", { mediaUrl: s })
     return `<?xml version="1.0" encoding="UTF-8"?><Response><Connect><Stream url="${s}"/></Connect><Pause length="1"/></Response>`
   }
@@ -28,7 +31,7 @@ export class TwilioAdapter implements TelephonyAdapter {
     const body = new URLSearchParams({
       From: from,
       To: req.to,
-      Twiml: this.inboundTwiml(config.mediaStreamUrl),
+      Twiml: this.inboundTwiml(config.mediaStreamUrl, { from, to: req.to }),
       StatusCallback: `${config.publicUrl}/api/twilio/status`,
       StatusCallbackEvent: "initiated ringing answered completed",
       StatusCallbackMethod: "POST"

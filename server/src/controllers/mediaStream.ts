@@ -154,12 +154,24 @@ const plugin: FastifyPluginAsync = async (app) => {
     }
   }
 
-  const handleConnection = (connection: { socket: unknown }) => {
+  const handleConnection = (connection: { socket: unknown }, req: any) => {
     const ws = connection.socket as unknown as WsLike
-    app.log.info("⌛[WebSocketController] New Connection Initiated")
+    const query = (req.query || {}) as { from?: string; to?: string }
+    let streamSid: string | undefined
+    app.log.info({ from: query.from, to: query.to }, "⌛[WebSocketController] New Connection Initiated with params")
 
-    ws.on("close", () => {
+    ws.on("close", async () => {
       app.log.info("⌛[WebSocketController] WebSocket connection closed")
+      if (streamSid) {
+        const id = byCall.get(streamSid)
+        if (id) {
+          await callService.update(id, { status: "ended", endedAt: new Date() })
+          app.log.info({ callSid: id }, "⌛[WebSocketController] Call status ENDED (via close)")
+          byCall.delete(id)
+        }
+        sessions.delete(streamSid)
+        sockets.delete(streamSid)
+      }
     })
 
     ws.on("error", (err) => {
@@ -185,6 +197,7 @@ const plugin: FastifyPluginAsync = async (app) => {
         }
 
         if (msg.event === "start") {
+          streamSid = msg.start.streamSid
           const id = msg.start.callSid
           byCall.set(id, msg.start.streamSid)
           sockets.set(msg.start.streamSid, { send: (data: string) => ws.send(data) })
@@ -292,7 +305,14 @@ const plugin: FastifyPluginAsync = async (app) => {
             promptText,
             history: []
           })
-          await callService.upsert({ id, status: "live", startedAt: new Date() })
+          // Try to update existing record first (preserve from/to)
+          await callService.update(id, { 
+             status: "live", 
+             startedAt: new Date(),
+             ...(query.from ? { from: query.from } : {}),
+             ...(query.to ? { to: query.to } : {})
+          })
+          
           app.log.info({ callSid: id }, "⌛[WebSocketController] Call status LIVE")
 
           try {

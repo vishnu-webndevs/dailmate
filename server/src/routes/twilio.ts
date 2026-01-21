@@ -16,8 +16,9 @@ const plugin: FastifyPluginAsync = async (app) => {
   const adapter = new TwilioAdapter()
   app.post("/inbound", async (req, reply) => {
     const mediaUrl = config.mediaStreamUrl
-    const xml = adapter.inboundTwiml(mediaUrl)
-    app.log.info({ mediaUrl }, "⌛[TwilioController] Inbound served")
+    const body = req.body as { From?: string; To?: string }
+    const xml = adapter.inboundTwiml(mediaUrl, { from: body.From, to: body.To })
+    app.log.info({ mediaUrl, from: body.From, to: body.To }, "⌛[TwilioController] Inbound served")
     reply.header("Content-Type", "text/xml").send(xml)
   })
   
