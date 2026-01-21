@@ -158,17 +158,18 @@ const plugin: FastifyPluginAsync = async (app) => {
     const ws = connection.socket as unknown as WsLike
     const query = (req.query || {}) as { from?: string; to?: string }
     let streamSid: string | undefined
+    let callSid: string | undefined
     app.log.info({ from: query.from, to: query.to }, "⌛[WebSocketController] New Connection Initiated with params")
 
     ws.on("close", async () => {
       app.log.info("⌛[WebSocketController] WebSocket connection closed")
+      if (callSid) {
+        const id = callSid
+        await callService.update(id, { status: "ended", endedAt: new Date() })
+        app.log.info({ callSid: id }, "⌛[WebSocketController] Call status ENDED (via close)")
+        byCall.delete(id)
+      }
       if (streamSid) {
-        const id = byCall.get(streamSid)
-        if (id) {
-          await callService.update(id, { status: "ended", endedAt: new Date() })
-          app.log.info({ callSid: id }, "⌛[WebSocketController] Call status ENDED (via close)")
-          byCall.delete(id)
-        }
         sessions.delete(streamSid)
         sockets.delete(streamSid)
       }
@@ -198,6 +199,7 @@ const plugin: FastifyPluginAsync = async (app) => {
 
         if (msg.event === "start") {
           streamSid = msg.start.streamSid
+          callSid = msg.start.callSid
           const id = msg.start.callSid
           byCall.set(id, msg.start.streamSid)
           sockets.set(msg.start.streamSid, { send: (data: string) => ws.send(data) })
