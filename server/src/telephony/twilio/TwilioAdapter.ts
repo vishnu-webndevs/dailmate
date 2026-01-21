@@ -9,7 +9,7 @@ export class TwilioAdapter implements TelephonyAdapter {
   inboundTwiml(mediaUrl: string): string {
     const s = mediaUrl
     console.log("⌛[TwilioAdapter] Inbound TwiML generated", { mediaUrl: s })
-    return `<?xml version="1.0" encoding="UTF-8"?><Response><Connect><Stream url="${s}"/></Connect></Response>`
+    return `<?xml version="1.0" encoding="UTF-8"?><Response><Connect><Stream url="${s}"/></Connect><Pause length="1"/></Response>`
   }
   private async creds() {
     const sid = process.env.TWILIO_ACCOUNT_SID || await secretService.get("TWILIO_ACCOUNT_SID")

@@ -3,7 +3,11 @@ import dotenv from "dotenv"
 dotenv.config()
 
 const defaultPort = Number(process.env.PORT || 8000)
-const defaultPublicUrl = process.env.PUBLIC_URL || `http://localhost:${defaultPort}`
+
+// Auto-detect production domain if PUBLIC_URL is missing
+const knownProdDomain = "https://dailmate.webndevs.com"
+const isProd = process.env.NODE_ENV === "production" || process.env.COOLIFY_URL !== undefined
+const defaultPublicUrl = process.env.PUBLIC_URL || (isProd ? knownProdDomain : `http://localhost:${defaultPort}`)
 
 function bool(v: string | undefined, def = false) {
   if (v === undefined) return def
