@@ -80,7 +80,7 @@ const plugin: FastifyPluginAsync = async (app) => {
   }
 
   // Helper to stream audio to Twilio
-  function streamAudio(streamSid: string, payloadBase64: string, markName: string = "eos") {
+  function streamAudio(streamSid: string, payloadBase64: string) {
     const s = sessions.get(streamSid)
     if (!s) return
 
@@ -124,7 +124,7 @@ const plugin: FastifyPluginAsync = async (app) => {
     const tEOS = setTimeout(() => {
         if (!sessions.has(streamSid)) return
         s.activeTimeouts.delete(tEOS)
-        const mark = { event: "mark", streamSid, mark: { name: markName } }
+        const mark = { event: "mark", streamSid, mark: { name: "eos" } }
         sockets.get(streamSid)?.send(JSON.stringify(mark))
         app.log.info({ streamSid }, "⌛[WebSocketController] TTS playback finished (EOS)")
     }, c * 20)
@@ -436,47 +436,6 @@ const plugin: FastifyPluginAsync = async (app) => {
                 if (responsePayload) {
                   streamAudio(msg.streamSid, responsePayload)
                 }
-              } else if ("function_call" in res) {
-                const call = (res as unknown as { function_call: { name: string, arguments: { message?: string } } }).function_call
-                if (call.name === "end_call") {
-                    app.log.info({ streamSid: msg.streamSid, call: "end_call" }, "⌛[WebSocketController] LLM requested End Call")
-                    const outText = call.arguments.message
-                    if (outText) {
-                      validateLanguageText(outText, s.language, "output", msg.streamSid, s.agentId)
-                      app.log.info({ streamSid: msg.streamSid, agent_output: outText }, "⌛[WebSocketController] LLM End Call Message")
-                      void callService.addTranscript(s.callId, "assistant", outText)
-
-                      let responsePayload = ""
-                      if (s.language === "hi") {
-                        try {
-                          const primary = await s.tts.synthesize(outText)
-                          responsePayload = primary
-                        } catch (err) {
-                          app.log.info({ streamSid: msg.streamSid, err: String(err) }, "❗[WebSocketController] Hindi TTS error")
-                        }
-                        if (!responsePayload) {
-                          try {
-                            const fallbackVoice = (await secretService.get("ELEVENLABS_EN_VOICE_ID")) || (await secretService.get("ELEVENLABS_VOICE_ID")) || ""
-                            if (fallbackVoice) {
-                              const fbTts = new ElevenLabsTTS(fallbackVoice)
-                              const fbPayload = await fbTts.synthesize(outText)
-                              if (fbPayload) responsePayload = fbPayload
-                            }
-                          } catch {}
-                        }
-                      } else {
-                        responsePayload = await s.tts.synthesize(outText)
-                      }
-
-                      if (responsePayload) {
-                          streamAudio(msg.streamSid, responsePayload, "end_call")
-                      } else {
-                          await cleanupStream(msg.streamSid)
-                      }
-                    } else {
-                        await cleanupStream(msg.streamSid)
-                    }
-                }
               }
             }
           }
@@ -485,10 +444,6 @@ const plugin: FastifyPluginAsync = async (app) => {
 
         if (msg.event === "mark") {
           if (config.logMediaMarks) app.log.info({ mark: msg.mark.name }, "⌛[WebSocketController] Media mark")
-          if (msg.mark.name === "end_call") {
-             app.log.info({ streamSid: msg.streamSid }, "⌛[WebSocketController] End call mark received, cleaning up")
-             await cleanupStream(msg.streamSid)
-          }
           return
         }
 
