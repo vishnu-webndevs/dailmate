@@ -34,24 +34,54 @@ export default function Calls() {
     }
   }
   return (
-    <main className="p-8">
+    <div className="space-y-6">
       <PageHeader title="Live Calls" />
       <ErrorAlert error={error} />
-      <ul className="mt-4 space-y-2">
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {calls.map(c => (
-          <li key={c.id} className="border p-2">
-            <div>ID: {c.id}</div>
-            <div>Status: {c.status}</div>
-            <div>Started: {c.startedAt}</div>
-            <div>Duration: {durationSince(c.startedAt)}s</div>
-            <div className="mt-2">
-              <ConfirmButton onConfirm={() => hangup(c.id)}>Hangup</ConfirmButton>
+          <div key={c.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col justify-between hover:shadow-md transition-shadow">
+            <div>
+              <div className="flex justify-between items-start mb-4">
+                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${c.status === 'live' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                  {c.status.toUpperCase()}
+                </span>
+                <span className="text-xs text-gray-400 font-mono">#{c.id.substring(0, 8)}</span>
+              </div>
+              
+              <div className="space-y-3 mb-6">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500">From:</span>
+                  <span className="font-medium text-gray-900">{c.from || 'Unknown'}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500">To:</span>
+                  <span className="font-medium text-gray-900">{c.to || 'Unknown'}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500">Duration:</span>
+                  <span className="font-medium text-gray-900 font-mono">{durationSince(c.startedAt)}s</span>
+                </div>
+              </div>
             </div>
-          </li>
+
+            <div className="pt-4 border-t border-gray-100">
+              <ConfirmButton 
+                onConfirm={() => hangup(c.id)}
+                className="w-full bg-red-50 text-red-600 hover:bg-red-100 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+              >
+                End Call
+              </ConfirmButton>
+            </div>
+          </div>
         ))}
-        {calls.length === 0 && <li>No live calls</li>}
-      </ul>
-    </main>
+        {calls.length === 0 && (
+          <div className="col-span-full bg-gray-50 rounded-xl border-2 border-dashed border-gray-200 p-12 text-center">
+            <p className="text-gray-500 text-lg">No active calls at the moment</p>
+          </div>
+        )}
+      </div>
+    </div>
   )
 }
 

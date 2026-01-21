@@ -37,7 +37,7 @@ const plugin: FastifyPluginAsync = async (app) => {
         reply.code(401).send({ error: "invalid_refresh" })
         return
       }
-      const user = authService.getById(userId)
+      const user = await authService.getById(userId)
       if (!user) {
         reply.code(401).send({ error: "invalid_refresh" })
         return

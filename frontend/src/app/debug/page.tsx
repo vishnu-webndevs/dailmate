@@ -22,23 +22,33 @@ export default function DebugAudioPage() {
   }, [])
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6">
       <PageHeader title="Debug Audio" />
 
-      {loading && <div>Loading...</div>}
+      {loading && (
+        <div className="flex justify-center p-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        </div>
+      )}
 
-      <div className="grid gap-4">
+      <div className="space-y-4">
         {files.map(file => (
-          <div key={file.name} className="bg-white p-4 rounded-lg shadow flex items-center justify-between">
+          <div key={file.name} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4 transition-all hover:shadow-md">
             <div className="font-mono text-sm">
-                <div>{file.name}</div>
-                <div className="text-xs text-gray-500">{new Date(file.ts).toLocaleString()}</div>
+                <div className="font-medium text-gray-900 mb-1">{file.name}</div>
+                <div className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded inline-block">
+                  {new Date(file.ts).toLocaleString()}
+                </div>
             </div>
-            <audio controls src={file.url} />
+            <div className="w-full sm:w-auto">
+               <audio controls src={file.url} className="w-full" style={{ minWidth: '250px' }} />
+            </div>
           </div>
         ))}
         {files.length === 0 && !loading && (
-            <div className="text-gray-500">No debug audio files found. Make a call first!</div>
+            <div className="text-center py-12 bg-white rounded-xl border border-dashed border-gray-300">
+              <p className="text-gray-500">No debug audio files found. Make a call first!</p>
+            </div>
         )}
       </div>
     </div>

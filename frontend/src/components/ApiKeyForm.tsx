@@ -6,71 +6,92 @@ import ErrorAlert from "./ErrorAlert"
 export default function ApiKeyForm({ onSaved }: { onSaved: () => void }) {
   const [name, setName] = useState("")
   const [value, setValue] = useState("")
-  const [selected, setSelected] = useState<string>("")
+  const [isExpanded, setIsExpanded] = useState(false)
   const [error, setError] = useState("")
-  const OPTIONS: Array<{ key: string; label: string; category: string; placeholder: string; doc?: string }> = [
-    { key: "OPENAI_API_KEY", label: "OpenAI API Key", category: "LLM", placeholder: "sk-...", doc: "https://platform.openai.com/account/api-keys" },
-    { key: "GROQ_API_KEY", label: "Groq API Key", category: "LLM", placeholder: "gsk_...", doc: "https://console.groq.com/keys" },
-    { key: "XAI_API_KEY", label: "xAI Grok API Key", category: "LLM", placeholder: "xai-...", doc: "https://x.ai" },
-    { key: "ELEVENLABS_API_KEY", label: "ElevenLabs API Key", category: "TTS", placeholder: "elevenlabs_...", doc: "https://elevenlabs.io" },
-    { key: "DEEPGRAM_API_KEY", label: "Deepgram API Key", category: "STT", placeholder: "dg_...", doc: "https://console.deepgram.com/signup" },
-    { key: "TWILIO_ACCOUNT_SID", label: "Twilio Account SID", category: "Telephony", placeholder: "ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", doc: "https://console.twilio.com" },
-    { key: "TWILIO_AUTH_TOKEN", label: "Twilio Auth Token", category: "Telephony", placeholder: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", doc: "https://console.twilio.com" },
-    { key: "TWILIO_FROM", label: "Twilio From Number", category: "Telephony", placeholder: "+15551234567", doc: "https://console.twilio.com" },
-    { key: "LIVEKIT_API_KEY", label: "LiveKit API Key", category: "Transport", placeholder: "lk_...", doc: "https://cloud.livekit.io" },
-    { key: "LIVEKIT_API_SECRET", label: "LiveKit API Secret", category: "Transport", placeholder: "lk_secret_...", doc: "https://cloud.livekit.io" }
-  ]
-  const grouped = OPTIONS.reduce((acc, o) => {
-    const list = acc.get(o.category) || []
-    list.push(o)
-    acc.set(o.category, list)
-    return acc
-  }, new Map<string, Array<{ key: string; label: string; category: string; placeholder: string; doc?: string }>>())
-  const current = OPTIONS.find(o => o.key === selected)
-  const onSelect = (k: string) => {
-    setSelected(k)
-    const opt = OPTIONS.find(o => o.key === k)
-    if (opt) {
-      setName(opt.key)
-      setValue("")
-    }
-  }
+  
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
       await apiPostJson("/api/settings/api-keys", { name, value })
       setName("")
       setValue("")
+      setIsExpanded(false)
       onSaved()
     } catch (e) {
       setError(String(e))
     }
   }
+
+  if (!isExpanded) {
+    return (
+      <button 
+        onClick={() => setIsExpanded(true)}
+        className="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium text-sm transition-colors"
+      >
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+        </svg>
+        Add Custom Environment Variable
+      </button>
+    )
+  }
+
   return (
-    <div className="border p-4 rounded">
-      <div className="font-semibold mb-2">Add / Update API Key</div>
-      <ErrorAlert error={error} />
-      <div className="mb-2">
-        <label className="block text-sm mb-1">Select secret</label>
-        <select className="border p-2 w-full" value={selected} onChange={(e) => onSelect(e.target.value)}>
-          <option value="">Custom</option>
-          {Array.from(grouped.entries()).map(([cat, list]) => (
-            <optgroup key={cat} label={cat}>
-              {list.map(o => <option key={o.key} value={o.key}>{o.label}</option>)}
-            </optgroup>
-          ))}
-        </select>
+    <div className="bg-gray-50 rounded-lg border border-gray-200 p-4 mt-4">
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="font-semibold text-gray-900">Add Custom Variable</h3>
+        <button 
+          onClick={() => setIsExpanded(false)}
+          className="text-gray-400 hover:text-gray-600"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
       </div>
-      <form className="flex gap-2" onSubmit={submit}>
-        <input className="border p-2 flex-1" value={name} onChange={(e) => setName(e.target.value)} placeholder="Provider name or env key" />
-        <input className="border p-2 flex-1" value={value} onChange={(e) => setValue(e.target.value)} placeholder={current?.placeholder || "Secret value"} />
-        <button className="px-3 py-2 border rounded" type="submit">Save</button>
-      </form>
-      {current?.doc && (
-        <div className="mt-2 text-xs text-zinc-600">
-          <a className="underline text-blue-600" href={current.doc} target="_blank" rel="noreferrer">{current.label} docs</a>
+      
+      <ErrorAlert error={error} />
+      
+      <form className="space-y-4" onSubmit={submit}>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Key Name</label>
+          <input 
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none uppercase" 
+            value={name} 
+            onChange={(e) => setName(e.target.value.toUpperCase())} 
+            placeholder="MY_CUSTOM_KEY" 
+            required
+          />
         </div>
-      )}
+        
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Value</label>
+          <input 
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" 
+            value={value} 
+            onChange={(e) => setValue(e.target.value)} 
+            placeholder="Secret value..." 
+            required
+          />
+        </div>
+        
+        <div className="flex justify-end gap-3">
+          <button 
+            type="button"
+            className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-200 rounded-lg transition-colors" 
+            onClick={() => setIsExpanded(false)}
+          >
+            Cancel
+          </button>
+          <button 
+            className="px-4 py-2 text-sm bg-blue-600 text-white hover:bg-blue-700 rounded-lg shadow transition-colors" 
+            type="submit"
+          >
+            Save Variable
+          </button>
+        </div>
+      </form>
     </div>
   )
 }
+

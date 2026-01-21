@@ -12,6 +12,7 @@ async function start() {
     process.exit(1)
   }
 
+  await authService.init()
   void authService.register({ email: "admin@example.com", password: "secret", role: "admin" }).catch(() => {})
   
   try {
