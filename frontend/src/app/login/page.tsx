@@ -4,8 +4,8 @@ import { API_BASE } from "../../lib/api";
 import { clearSessionCookie, setSessionCookie } from "../../lib/auth";
  
 export default function Login() {
-  const [email, setEmail] = useState("admin@example.com")
-  const [password, setPassword] = useState("secret")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
   const [token, setToken] = useState<string>("")
   const [message] = useState<string>(() => {
     if (typeof window === "undefined") return ""
