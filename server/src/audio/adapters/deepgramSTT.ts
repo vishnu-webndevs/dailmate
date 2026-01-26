@@ -65,7 +65,6 @@ export class DeepgramSTT implements STTProvider {
           const msg = JSON.parse(txt) as DGMessage
           const alt = msg?.channel?.alternatives?.[0]
           const t = alt?.transcript || ""
-          if (t && t.trim()) this.lastText = t
           if (config.logSttEvents) {
             if (t && t.trim()) {
               if (msg.is_final) {
@@ -74,6 +73,10 @@ export class DeepgramSTT implements STTProvider {
                 console.log("⌛[DeepgramSTT] Interim Transcript", { transcript: t })
               }
             }
+          }
+          // Only capture final transcripts to prevent AI from responding to partial sentences (self-interruption)
+          if (msg.is_final && t && t.trim()) {
+            this.lastText = t
           }
         } catch {
           return
