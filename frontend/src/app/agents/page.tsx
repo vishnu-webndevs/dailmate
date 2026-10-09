@@ -165,7 +165,7 @@ export default function Agents() {
               </div>
               <button 
                 onClick={() => setIsCreating(true)}
-                className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow transition-all flex items-center justify-center gap-2"
+                className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>
                 Create New Agent
@@ -175,7 +175,7 @@ export default function Agents() {
             <>
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-lg font-semibold text-gray-900">Create New Agent</h2>
-                <button onClick={() => setIsCreating(false)} className="text-gray-400 hover:text-gray-600 transition-colors">
+                <button onClick={() => setIsCreating(false)} className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer">
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
                 </button>
               </div>
@@ -235,12 +235,12 @@ export default function Agents() {
                   <button 
                     type="button" 
                     onClick={() => setIsCreating(false)} 
-                    className="w-full sm:w-auto px-6 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition-colors"
+                    className="w-full sm:w-auto px-6 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition-colors cursor-pointer"
                   >
                     Cancel
                   </button>
                   <button 
-                    className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow transition-all transform hover:scale-[1.02]" 
+                    className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow transition-all transform hover:scale-[1.02] cursor-pointer" 
                     type="submit"
                   >
                     Create Agent
@@ -281,11 +281,11 @@ export default function Agents() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex gap-2">
-                        <button className="text-blue-600 hover:text-blue-900 font-medium text-sm" onClick={() => openEdit(a)}>Edit</button>
+                        <button className="text-blue-600 hover:text-blue-900 font-medium text-sm cursor-pointer" onClick={() => openEdit(a)}>Edit</button>
                         <span className="text-gray-300">|</span>
-                        <button className="text-green-600 hover:text-green-900 font-medium text-sm" onClick={() => openTest(a)}>Test</button>
+                        <button className="text-green-600 hover:text-green-900 font-medium text-sm cursor-pointer" onClick={() => openTest(a)}>Test</button>
                         <span className="text-gray-300">|</span>
-                        <button className="text-red-600 hover:text-red-900 font-medium text-sm" onClick={() => deleteAgent(a)}>Delete</button>
+                        <button className="text-red-600 hover:text-red-900 font-medium text-sm cursor-pointer" onClick={() => deleteAgent(a)}>Delete</button>
                       </div>
                     </td>
                   </tr>
@@ -361,8 +361,8 @@ export default function Agents() {
                   </div>
                   
                   <div className="flex justify-end gap-3 mt-6">
-                    <button type="button" className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition-colors" onClick={() => setEditing(null)}>Cancel</button>
-                    <button type="submit" className="px-4 py-2 text-white bg-blue-600 hover:bg-blue-700 rounded-lg font-medium transition-colors">Save Changes</button>
+                    <button type="button" className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition-colors cursor-pointer" onClick={() => setEditing(null)}>Cancel</button>
+                    <button type="submit" className="px-4 py-2 text-white bg-blue-600 hover:bg-blue-700 rounded-lg font-medium transition-colors cursor-pointer">Save Changes</button>
                   </div>
                 </form>
               </div>
@@ -435,8 +435,8 @@ export default function Agents() {
                   )}
 
                   <div className="flex justify-end gap-3 mt-6">
-                    <button type="button" className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition-colors" onClick={() => setTestAgent(null)}>Close</button>
-                    <button type="submit" className="px-4 py-2 text-white bg-green-600 hover:bg-green-700 rounded-lg font-medium transition-colors flex items-center">
+                    <button type="button" className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition-colors cursor-pointer" onClick={() => setTestAgent(null)}>Close</button>
+                    <button type="submit" className="px-4 py-2 text-white bg-green-600 hover:bg-green-700 rounded-lg font-medium transition-colors flex items-center cursor-pointer">
                       <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
                       Start Call
                     </button>

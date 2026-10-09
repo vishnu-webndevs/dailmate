@@ -76,7 +76,7 @@ export default function Prompts() {
           />
           <div className="flex justify-end md:justify-start">
             <button 
-              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow transition-all transform hover:scale-[1.02] w-full md:w-auto" 
+              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow transition-all transform hover:scale-[1.02] w-full md:w-auto cursor-pointer" 
               type="submit"
             >
               Create Prompt
@@ -99,7 +99,7 @@ export default function Prompts() {
                   <span className="text-xs text-gray-500">Current Version: v{p.activeVersion}</span>
                 </div>
                 <button 
-                  className={`px-3 py-1.5 text-sm rounded-lg border transition-all ${selected?.id === p.id ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-600 border-gray-200 hover:border-blue-300 hover:text-blue-600'}`}
+                  className={`px-3 py-1.5 text-sm rounded-lg border transition-all cursor-pointer ${selected?.id === p.id ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-600 border-gray-200 hover:border-blue-300 hover:text-blue-600'}`}
                   onClick={(e) => { e.stopPropagation(); loadVersions(p); }}
                 >
                   View Versions
@@ -160,7 +160,7 @@ export default function Prompts() {
                   placeholder="New version content" 
                 />
                 <button 
-                  className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg shadow transition-all" 
+                  className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg shadow transition-all cursor-pointer" 
                   type="submit"
                 >
                   Add

@@ -3,5 +3,5 @@ export default function ConfirmButton({ onConfirm, children, className }: { onCo
   const click = () => {
     if (confirm("Are you sure?")) onConfirm()
   }
-  return <button className={className || "px-3 py-1 border rounded"} onClick={click}>{children}</button>
+  return <button className={`${className || "px-3 py-1 border rounded"} cursor-pointer`} onClick={click}>{children}</button>
 }

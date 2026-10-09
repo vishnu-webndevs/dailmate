@@ -153,7 +153,7 @@ export default function Sidebar() {
             localStorage.removeItem('jwt');
             window.location.href = '/login';
           }}
-          className="w-full flex items-center justify-center px-4 py-2 text-sm text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+          className="w-full flex items-center justify-center px-4 py-2 text-sm text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
         >
           Sign Out
         </button>

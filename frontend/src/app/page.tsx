@@ -32,18 +32,18 @@ export default function Home() {
         </div>
         {loggedIn ? (
           <div className="flex items-center gap-4">
-            <a href="/dashboard" className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-all">
+            <a href="/dashboard" className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-all cursor-pointer">
               Dashboard
             </a>
             <button 
               onClick={handleLogout} 
-              className="text-sm font-medium text-gray-600 hover:text-red-600 transition-colors"
+              className="text-sm font-medium text-gray-600 hover:text-red-600 transition-colors cursor-pointer"
             >
               Sign Out
             </button>
           </div>
         ) : (
-          <a href="/login" className="text-sm font-medium text-gray-600 hover:text-gray-900">Sign In</a>
+          <a href="/login" className="text-sm font-medium text-gray-600 hover:text-gray-900 cursor-pointer">Sign In</a>
         )}
       </header>
       

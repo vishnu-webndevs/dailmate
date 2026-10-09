@@ -19,7 +19,7 @@ export default function Topbar() {
       <div className="font-semibold">WND-AI</div>
       <div className="flex items-center gap-4">
         <span className="text-sm">Role: {role || "guest"}</span>
-        {authed ? <button className="px-3 py-1 border rounded" onClick={logout}>Logout</button> : <a className="underline" href="/login">Login</a>}
+        {authed ? <button className="px-3 py-1 border rounded cursor-pointer" onClick={logout}>Logout</button> : <a className="underline cursor-pointer" href="/login">Login</a>}
       </div>
     </header>
   )
