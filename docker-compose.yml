@@ -1,6 +1,5 @@
 services:
   frontend:
-    image: dailmate-frontend
     build:
       context: ./frontend
       dockerfile: Dockerfile
@@ -31,7 +30,6 @@ services:
       - TWILIO_FROM=${TWILIO_FROM}
 
   nginx:
-    image: dailmate-nginx
     build:
       context: ./nginx
       dockerfile: Dockerfile
