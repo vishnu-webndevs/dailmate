@@ -22,10 +22,14 @@ const plugin: FastifyPluginAsync = async (app) => {
   })
 
   app.post("/login", async (req, reply) => {
-    const body = loginSchema.parse(req.body)
-    const user = await authService.login(body)
-    const tokens = await authService.issueTokens(app, user)
-    reply.send(tokens)
+    try {
+      const body = loginSchema.parse(req.body)
+      const user = await authService.login(body)
+      const tokens = await authService.issueTokens(app, user)
+      reply.send(tokens)
+    } catch (err: any) {
+      reply.code(401).send({ error: err.message || "Invalid email or password" })
+    }
   })
   app.post("/refresh", async (req, reply) => {
     try {

@@ -234,11 +234,12 @@ const plugin: FastifyPluginAsync = async (app) => {
             }
             if (apiKey) {
               let voiceId = call?.voice || ""
+              let agentRec: Awaited<ReturnType<typeof agentService.getById>> | undefined = undefined
               if (call?.agentId !== undefined) {
                 try {
-                  const agent = await agentService.getById(call.agentId)
-                  if (agent && agent.voice) {
-                    voiceId = agent.voice
+                  agentRec = await agentService.getById(call.agentId)
+                  if (agentRec && agentRec.voice) {
+                    voiceId = agentRec.voice
                   }
                 } catch {
                   void 0
@@ -247,8 +248,8 @@ const plugin: FastifyPluginAsync = async (app) => {
               if (!voiceId) {
                 voiceId = (await secretService.get("ELEVENLABS_VOICE_ID")) || ""
               }
-              tts = new ElevenLabsTTS(voiceId || undefined, language)
-              app.log.info({ streamSid: msg.start.streamSid, voiceId, language }, "⌛[WebSocketController] ElevenLabs voice selected")
+              tts = new ElevenLabsTTS(voiceId || undefined, language, agentRec?.voiceStability, agentRec?.voiceSimilarity)
+              app.log.info({ streamSid: msg.start.streamSid, voiceId, language, stability: agentRec?.voiceStability, similarity: agentRec?.voiceSimilarity }, "⌛[WebSocketController] ElevenLabs voice selected")
             }
 
             const dgKey = process.env.DEEPGRAM_API_KEY || await secretService.get("DEEPGRAM_API_KEY") || ""

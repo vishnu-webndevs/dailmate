@@ -4,7 +4,17 @@ import PageHeader from "../../components/PageHeader"
 import ErrorAlert from "../../components/ErrorAlert"
 import { apiGet, apiPostJson, apiPutJson, apiDelete } from "../../lib/api"
 
-type Agent = { id: number; name: string; description?: string; promptId?: string; twilioFrom?: string; voice?: string; language: "en" | "hi" }
+type Agent = { 
+  id: number; 
+  name: string; 
+  description?: string; 
+  promptId?: string; 
+  twilioFrom?: string; 
+  voice?: string; 
+  language: "en" | "hi";
+  voiceStability?: number;
+  voiceSimilarity?: number;
+}
 type Prompt = { id: string; name: string; activeVersion: number }
 type Voice = { id: string; name: string; category?: string }
 
@@ -16,6 +26,9 @@ export default function Agents() {
   const [twilioFrom, setTwilioFrom] = useState<string>("")
   const [voice, setVoice] = useState<string>("")
   const [language, setLanguage] = useState<"en" | "hi">("en")
+  const [voiceStability, setVoiceStability] = useState<number>(0.45)
+  const [voiceSimilarity, setVoiceSimilarity] = useState<number>(0.85)
+
   const [prompts, setPrompts] = useState<Prompt[]>([])
   const [twilioNumbers, setTwilioNumbers] = useState<Array<{ phoneNumber: string; friendlyName?: string }>>([])
   const [voices, setVoices] = useState<Voice[]>([])
@@ -27,6 +40,9 @@ export default function Agents() {
   const [editTwilioFrom, setEditTwilioFrom] = useState<string>("")
   const [editVoice, setEditVoice] = useState<string>("")
   const [editLanguage, setEditLanguage] = useState<"en" | "hi">("en")
+  const [editVoiceStability, setEditVoiceStability] = useState<number>(0.45)
+  const [editVoiceSimilarity, setEditVoiceSimilarity] = useState<number>(0.85)
+
   const [testAgent, setTestAgent] = useState<Agent | null>(null)
   const [testTo, setTestTo] = useState<string>("")
   const [testPromptId, setTestPromptId] = useState<string>("")
@@ -58,13 +74,15 @@ export default function Agents() {
   const create = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      await apiPostJson("/api/agents", { name, description, promptId, twilioFrom, voice, language })
+      await apiPostJson("/api/agents", { name, description, promptId, twilioFrom, voice, language, voiceStability, voiceSimilarity })
       setName("")
       setDescription("")
       setPromptId("")
       setTwilioFrom("")
       setVoice("")
       setLanguage("en")
+      setVoiceStability(0.45)
+      setVoiceSimilarity(0.85)
       setIsCreating(false)
       load()
     } catch (e) {
@@ -80,6 +98,8 @@ export default function Agents() {
     setEditTwilioFrom(a.twilioFrom || "")
     setEditVoice(a.voice || "")
     setEditLanguage(a.language || "en")
+    setEditVoiceStability(a.voiceStability ?? 0.45)
+    setEditVoiceSimilarity(a.voiceSimilarity ?? 0.85)
   }
   const saveEdit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -91,7 +111,9 @@ export default function Agents() {
         promptId: editPromptId,
         twilioFrom: editTwilioFrom,
         voice: editVoice,
-        language: editLanguage
+        language: editLanguage,
+        voiceStability: editVoiceStability,
+        voiceSimilarity: editVoiceSimilarity
       })
       setEditing(null)
       load()
@@ -188,6 +210,26 @@ export default function Agents() {
                 ) : (
                   <input className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" value={voice} onChange={e => setVoice(e.target.value)} placeholder="Voice (e.g., elevenlabs voice id/name)" />
                 )}
+                
+                <div className="md:col-span-2 lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-purple-50/50 rounded-xl border border-purple-100 mt-2">
+                  <div>
+                    <div className="flex justify-between items-center mb-1">
+                      <label className="text-xs font-semibold text-purple-900">Voice Expression / Stability</label>
+                      <span className="text-xs font-bold text-purple-700">{voiceStability}</span>
+                    </div>
+                    <input type="range" min="0.0" max="1.0" step="0.05" className="w-full accent-purple-600 cursor-pointer" value={voiceStability} onChange={e => setVoiceStability(parseFloat(e.target.value))} />
+                    <p className="text-[11px] text-purple-600 mt-1">Lower value (0.40 - 0.50) = More human pitch variation & expression</p>
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between items-center mb-1">
+                      <label className="text-xs font-semibold text-purple-900">Voice Clarity / Similarity</label>
+                      <span className="text-xs font-bold text-purple-700">{voiceSimilarity}</span>
+                    </div>
+                    <input type="range" min="0.0" max="1.0" step="0.05" className="w-full accent-purple-600 cursor-pointer" value={voiceSimilarity} onChange={e => setVoiceSimilarity(parseFloat(e.target.value))} />
+                    <p className="text-[11px] text-purple-600 mt-1">Higher value (0.80 - 0.90) = High voice clarity & resemblance</p>
+                  </div>
+                </div>
                 
                 <div className="md:col-span-2 lg:col-span-3 flex justify-end gap-3 mt-4 pt-4 border-t border-gray-100">
                   <button 
@@ -297,6 +339,24 @@ export default function Agents() {
                       ) : (
                         <input className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none" value={editVoice} onChange={e => setEditVoice(e.target.value)} />
                       )}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4 p-4 bg-purple-50/50 rounded-xl border border-purple-100">
+                    <div>
+                      <div className="flex justify-between items-center mb-1">
+                        <label className="text-xs font-semibold text-purple-900">Voice Expression / Stability</label>
+                        <span className="text-xs font-bold text-purple-700">{editVoiceStability}</span>
+                      </div>
+                      <input type="range" min="0.0" max="1.0" step="0.05" className="w-full accent-purple-600 cursor-pointer" value={editVoiceStability} onChange={e => setEditVoiceStability(parseFloat(e.target.value))} />
+                    </div>
+
+                    <div>
+                      <div className="flex justify-between items-center mb-1">
+                        <label className="text-xs font-semibold text-purple-900">Voice Clarity / Similarity</label>
+                        <span className="text-xs font-bold text-purple-700">{editVoiceSimilarity}</span>
+                      </div>
+                      <input type="range" min="0.0" max="1.0" step="0.05" className="w-full accent-purple-600 cursor-pointer" value={editVoiceSimilarity} onChange={e => setEditVoiceSimilarity(parseFloat(e.target.value))} />
                     </div>
                   </div>
                   

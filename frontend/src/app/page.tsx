@@ -1,21 +1,50 @@
 'use client'
 import { useEffect, useState } from "react";
+import { clearSessionCookie, getToken } from "../lib/auth";
 
 export default function Home() {
   const [health, setHealth] = useState<string>("")
+  const [loggedIn, setLoggedIn] = useState<boolean>(false)
+
   useEffect(() => {
     fetch("/api/health")
       .then(r => r.json())
       .then(d => setHealth(JSON.stringify(d)))
       .catch(() => setHealth("unavailable"))
+
+    if (typeof window !== "undefined" && !!getToken()) {
+      setLoggedIn(true)
+    }
   }, [])
+
+  const handleLogout = () => {
+    localStorage.removeItem("jwt")
+    localStorage.removeItem("refresh")
+    clearSessionCookie()
+    setLoggedIn(false)
+  }
+
   return (
     <div className="min-h-screen bg-white flex flex-col">
       <header className="px-6 py-4 flex items-center justify-between border-b border-gray-100">
         <div className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
           DailMate
         </div>
-        <a href="/login" className="text-sm font-medium text-gray-600 hover:text-gray-900">Sign In</a>
+        {loggedIn ? (
+          <div className="flex items-center gap-4">
+            <a href="/dashboard" className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-all">
+              Dashboard
+            </a>
+            <button 
+              onClick={handleLogout} 
+              className="text-sm font-medium text-gray-600 hover:text-red-600 transition-colors"
+            >
+              Sign Out
+            </button>
+          </div>
+        ) : (
+          <a href="/login" className="text-sm font-medium text-gray-600 hover:text-gray-900">Sign In</a>
+        )}
       </header>
       
       <main className="flex-1 flex flex-col items-center justify-center p-8 text-center max-w-4xl mx-auto">
@@ -33,9 +62,15 @@ export default function Home() {
         </p>
         
         <div className="flex flex-col sm:flex-row gap-4">
-          <a href="/login" className="px-8 py-4 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1">
-            Launch Console
-          </a>
+          {loggedIn ? (
+            <a href="/dashboard" className="px-8 py-4 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+              Go to Dashboard →
+            </a>
+          ) : (
+            <a href="/login" className="px-8 py-4 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+              Launch Console
+            </a>
+          )}
           <a href="/calls" className="px-8 py-4 bg-white text-gray-700 font-semibold border border-gray-200 rounded-lg hover:bg-gray-50 transition-all">
             View Live Demo
           </a>

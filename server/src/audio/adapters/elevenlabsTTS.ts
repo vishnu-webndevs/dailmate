@@ -5,7 +5,12 @@ import { secretService } from "../../services/secretService.js"
 type ElevenLanguage = "en" | "hi"
 
 export class ElevenLabsTTS implements TTSProvider {
-  constructor(private voiceId?: string, private lang: ElevenLanguage = "en") {}
+  constructor(
+    private voiceId?: string,
+    private lang: ElevenLanguage = "en",
+    private stability: number = 0.45,
+    private similarityBoost: number = 0.85
+  ) {}
   private async getApiKey() {
     const fromDb = await secretService.get("ELEVENLABS_API_KEY")
     return process.env.ELEVENLABS_API_KEY || fromDb || ""
@@ -20,7 +25,7 @@ export class ElevenLabsTTS implements TTSProvider {
       v = "21m00Tcm4TlvDq8ikWAM" // Default to Rachel
     }
 
-    console.log("[ElevenLabsTTS] Using voice id", v, "lang", this.lang)
+    console.log("[ElevenLabsTTS] Using voice id", v, "lang", this.lang, "stability", this.stability, "similarity", this.similarityBoost)
     const url = `https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(v)}/stream?output_format=ulaw_8000`
 
     const res = await fetch(url, {
@@ -31,7 +36,10 @@ export class ElevenLabsTTS implements TTSProvider {
       },
       body: JSON.stringify({
         text,
-        voice_settings: { stability: 0.5, similarity_boost: 0.75 },
+        voice_settings: {
+          stability: this.stability ?? 0.45,
+          similarity_boost: this.similarityBoost ?? 0.85
+        },
         model_id: "eleven_turbo_v2"
       })
     })

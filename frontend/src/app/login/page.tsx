@@ -1,28 +1,16 @@
 'use client'
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { API_BASE } from "../../lib/api";
-import { clearSessionCookie, setSessionCookie } from "../../lib/auth";
- 
+import { clearSessionCookie, setSessionCookie, getToken, isTokenExpired } from "../../lib/auth";
+
 export default function Login() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [token, setToken] = useState<string>("")
-  const [message] = useState<string>(() => {
-    if (typeof window === "undefined") return ""
-    clearSessionCookie()
-    try {
-      const url = new URL(window.location.href)
-      const expired = url.searchParams.get("expired") === "1"
-      const expiredFlag = localStorage.getItem("sessionExpired") === "1"
-      localStorage.removeItem("sessionExpired")
-      if (expired || expiredFlag) {
-        return "Your session has ended. Please log in again to continue."
-      }
-      return ""
-    } catch {
-      return ""
-    }
-  })
+  const [error, setError] = useState<string>("")
+  const [loading, setLoading] = useState<boolean>(false)
+  const [message, setMessage] = useState<string>("")
+
   const [redirectTo] = useState<string>(() => {
     if (typeof window === "undefined") return "/dashboard"
     try {
@@ -35,18 +23,50 @@ export default function Login() {
     }
   })
 
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    try {
+      const url = new URL(window.location.href)
+      const expired = url.searchParams.get("expired") === "1"
+      const expiredFlag = localStorage.getItem("sessionExpired") === "1"
+      localStorage.removeItem("sessionExpired")
+
+      const currentToken = getToken()
+      if (currentToken && !isTokenExpired() && !expired && !expiredFlag) {
+        window.location.href = redirectTo || "/dashboard"
+        return
+      }
+
+      if (expired || expiredFlag) {
+        clearSessionCookie()
+        setMessage("Your session has ended. Please log in again to continue.")
+      }
+    } catch {
+      // ignore
+    }
+  }, [redirectTo])
+
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    const res = await fetch(`${API_BASE}/auth/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password })
-    })
-    const data = await res.json()
-    setToken(data.access_token || "")
-    localStorage.setItem("jwt", data.access_token || "")
-    if (data.refresh_token) localStorage.setItem("refresh", data.refresh_token)
-    if (data.access_token) {
+    setError("")
+    setLoading(true)
+    try {
+      const res = await fetch(`${API_BASE}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
+      })
+      const data = await res.json().catch(() => ({}))
+      
+      if (!res.ok || !data.access_token) {
+        setError(data.error || data.message || "Invalid email or password. Please try again.")
+        setLoading(false)
+        return
+      }
+
+      setToken(data.access_token || "")
+      localStorage.setItem("jwt", data.access_token || "")
+      if (data.refresh_token) localStorage.setItem("refresh", data.refresh_token)
       setSessionCookie()
       try {
         localStorage.removeItem("postLoginRedirect")
@@ -55,6 +75,10 @@ export default function Login() {
       }
       const target = redirectTo || "/dashboard"
       window.location.href = target
+    } catch (err) {
+      setError("Network error. Please check your server connection.")
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -68,8 +92,17 @@ export default function Login() {
         </div>
         
         {message && (
-          <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 text-sm rounded">
+          <div className="mb-6 p-4 bg-amber-50 border-l-4 border-amber-500 text-amber-700 text-sm rounded">
             {message}
+          </div>
+        )}
+
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 text-sm rounded flex items-center gap-3">
+            <svg className="w-5 h-5 text-red-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span className="font-medium">{error}</span>
           </div>
         )}
 
@@ -82,6 +115,7 @@ export default function Login() {
               onChange={e => setEmail(e.target.value)} 
               placeholder="name@company.com" 
               type="email"
+              required
             />
           </div>
           
@@ -93,14 +127,26 @@ export default function Login() {
               onChange={e => setPassword(e.target.value)} 
               placeholder="••••••••" 
               type="password" 
+              required
             />
           </div>
 
           <button 
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg shadow-lg transition-all transform hover:scale-[1.02] active:scale-[0.98]" 
+            disabled={loading}
+            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold py-3 px-4 rounded-lg shadow-lg transition-all transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2" 
             type="submit"
           >
-            Sign In
+            {loading ? (
+              <>
+                <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span>Signing in...</span>
+              </>
+            ) : (
+              "Sign In"
+            )}
           </button>
         </form>
         

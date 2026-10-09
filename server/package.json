@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "ts-node-dev --respawn --transpile-only --esm src/server.ts",
+    "dev": "npm run build && node dist/server.js",
     "build": "tsc -p .",
     "start": "node dist/server.js",
     "lint": "eslint . --ext .ts",
