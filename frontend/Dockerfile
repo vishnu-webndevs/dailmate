@@ -4,6 +4,7 @@ WORKDIR /app
 COPY package.json package-lock.json* ./
 RUN npm ci
 
+ARG CACHEBUST=20261009_v2
 COPY . .
 RUN npm run build
 

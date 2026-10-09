@@ -8,6 +8,7 @@ RUN apk add --no-cache curl
 COPY package.json package-lock.json* ./
 RUN npm install
 
+ARG CACHEBUST=20261009_v2
 COPY . .
 RUN npm run build
 
