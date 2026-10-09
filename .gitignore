@@ -19,9 +19,6 @@ build
 PROJECT_DOCUMENTATION.md
 Overview.md
 
-# Ignore .gitignore itself
-.gitignore
-
 # Debug
 npm-debug.log*
 yarn-debug.log*
